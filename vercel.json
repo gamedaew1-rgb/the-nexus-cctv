@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install && npx expo install react react-dom react-native react-native-web @expo/metro-runtime expo-video expo-status-bar @expo/vector-icons @react-navigation/native @react-navigation/native-stack @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context",
-  "buildCommand": "npx expo export --platform web",
+  "installCommand": "npm install && npm run setup-all",
+  "buildCommand": "npm run build:web",
   "outputDirectory": "dist"
 }
