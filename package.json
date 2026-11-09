@@ -1,0 +1,17 @@
+{
+  "name": "the-nexus-cctv",
+  "version": "2.0.0",
+  "main": "index.js",
+  "scripts": {
+    "setup": "expo install react react-native expo-video expo-status-bar @expo/vector-icons @react-navigation/native @react-navigation/native-stack @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "setup-web": "expo install react-dom react-native-web @expo/metro-runtime"
+  },
+  "dependencies": {
+    "expo": "~58.0.0"
+  },
+  "private": true
+}

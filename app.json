@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "The Nexus CCTV",
+    "slug": "the-nexus-cctv",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0A1220",
+    "plugins": ["expo-video"],
+    "ios": { "supportsTablet": true }
+  }
+}
