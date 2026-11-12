@@ -13,9 +13,11 @@ export default function DevicesScreen() {
   const [moving, setMoving] = useState(false);
 
   const toggle = (id) => setSelected((l) => (l.includes(id) ? l.filter((x) => x !== id) : [...l, id]));
+  // กล้องที่เฟิร์มแวร์ยังไม่ใช่เวอร์ชันล่าสุด
   const needsUpdate = visibleCameras.filter((c) => c.firmware !== c.latestFirmware);
   const selectedNeedUpdate = selected.filter((id) => needsUpdate.some((c) => c.id === id));
 
+  // อัปเดตเฟิร์มแวร์ (UC-12): ตั้งสถานะ "กำลังอัปเดต" แล้วจำลองเวลา 2.5 วินาทีก่อนเปลี่ยนเป็นเวอร์ชันล่าสุด
   const updateFirmware = () => {
     const ids = selectedNeedUpdate;
     if (ids.length === 0) return showAlert('ไม่มีอะไรต้องอัปเดต', 'กล้องที่เลือกใช้เฟิร์มแวร์ล่าสุดแล้ว');
@@ -25,6 +27,7 @@ export default function DevicesScreen() {
     setTimeout(() => updateCameras(ids, (c) => ({ updating: false, firmware: c.latestFirmware })), 2500);
   };
 
+  // ย้ายกล้องที่เลือกทั้งหมดไปสาขาใหม่
   const moveTo = (siteId) => {
     updateCameras(selected, { siteId });
     showAlert('ย้ายสำเร็จ', `ย้าย ${selected.length} กล้องไปที่ ${getSite(siteId).name} แล้ว`);
@@ -73,6 +76,7 @@ export default function DevicesScreen() {
         })}
       </ScrollView>
 
+      {/* แถบคำสั่งด้านล่าง โผล่เมื่อเลือกกล้องอย่างน้อย 1 ตัว */}
       {selected.length > 0 && (
         <View style={styles.actionBar}>
           {moving ? (

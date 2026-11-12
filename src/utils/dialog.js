@@ -6,6 +6,7 @@ export function showAlert(title, message = '') {
   else Alert.alert(title, message);
 }
 
+// หน้าต่างยืนยัน (ตกลง/ยกเลิก) · บนเว็บใช้ window.confirm ของเบราว์เซอร์ บนมือถือใช้ Alert
 export function showConfirm(title, message, confirmText, onConfirm) {
   if (Platform.OS === 'web') {
     if (window.confirm(`${title}\n\n${message}`)) onConfirm();

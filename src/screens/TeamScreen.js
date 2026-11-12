@@ -10,11 +10,13 @@ export default function TeamScreen({ navigation }) {
   const { members, sites, cameras, currentUser, canEditMember } = useApp();
   const [tab, setTab] = useState('members');
   const [roleFilter, setRoleFilter] = useState('all');
+  // กรองรายชื่อตามบทบาทที่เลือกในชิป (UC-09)
   const list = roleFilter === 'all' ? members : members.filter((m) => m.role === roleFilter);
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 110 }}>
+        {/* การ์ดนับจำนวนสมาชิกแต่ละบทบาท */}
         <View style={styles.stats}>
           {Object.keys(ROLES).map((r) => (
             <View key={r} style={styles.stat}>
@@ -46,6 +48,7 @@ export default function TeamScreen({ navigation }) {
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
                     <RoleBadge role={m.role} />
+                    {/* ไอคอนแม่กุญแจ = บัญชีที่ผู้ใช้ปัจจุบันไม่มีสิทธิ์แก้ไข */}
                     {!canEditMember(m) && m.id !== currentUser.id && <Ionicons name="lock-closed" size={12} color="#A3AFC0" style={{ marginTop: 4 }} />}
                   </View>
                 </Pressable>
@@ -54,6 +57,7 @@ export default function TeamScreen({ navigation }) {
           </>
         ) : (
           <View style={{ marginTop: 14 }}>
+            {/* แท็บสาขา: นับกล้องออนไลน์และจำนวนคนที่เข้าถึงแต่ละสาขา */}
             {sites.map((s) => {
               const cams = cameras.filter((c) => c.siteId === s.id);
               const online = cams.filter((c) => c.online).length;
@@ -76,6 +80,7 @@ export default function TeamScreen({ navigation }) {
         )}
       </ScrollView>
 
+      {/* ปุ่มลอย "เพิ่มสมาชิก" มุมขวาล่าง */}
       {tab === 'members' && (
         <Pressable style={styles.fab} onPress={() => navigation.navigate('InviteMember')}>
           <Ionicons name="person-add" size={20} color="#fff" />

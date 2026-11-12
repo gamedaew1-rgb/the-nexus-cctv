@@ -12,10 +12,12 @@ export default function MemberDetailScreen({ route, navigation }) {
   const member = members.find((m) => m.id === route.params.memberId);
   if (!member) return null;
 
+  // editable = มีสิทธิ์แก้บัญชีนี้หรือไม่ (กฎอยู่ใน canEditMember ของ AppContext) · Admin เข้าถึงทุกสาขาอัตโนมัติ
   const editable = canEditMember(member);
   const isSelf = member.id === currentUser.id;
   const allSites = member.role === 'admin';
 
+  // เปิด/ปิดสิทธิ์เข้าถึงสาขา (UC-10)
   const toggleSite = (siteId, on) =>
     updateMember(member.id, { siteIds: on ? [...member.siteIds, siteId] : member.siteIds.filter((id) => id !== siteId) });
 
@@ -39,6 +41,7 @@ export default function MemberDetailScreen({ route, navigation }) {
       )}
 
       <SectionTitle>บทบาท</SectionTitle>
+      {/* เปลี่ยนบทบาทได้เฉพาะ Admin (เจ้าหน้าที่กำหนดได้แค่ "สมาชิก" จึงแสดงเป็นข้อความเฉยๆ) */}
       {editable && assignableRoles.length > 1 ? (
         <Segment options={assignableRoles.map((r) => ({ value: r, label: ROLES[r].label }))}
           value={member.role} onChange={(role) => updateMember(member.id, { role })} />
@@ -58,6 +61,7 @@ export default function MemberDetailScreen({ route, navigation }) {
       {allSites && <Text style={styles.note}>Admin เข้าถึงได้ทุกสาขาโดยอัตโนมัติ</Text>}
 
       {editable && <PrimaryButton label="ลบบัญชีนี้" icon="trash-outline" danger onPress={() => setAskRemove(true)} style={{ marginTop: 28 }} />}
+      {/* ยืนยันก่อนลบบัญชี (UC-11) */}
       <ConfirmDialog visible={askRemove} danger icon="trash-outline" title="ลบบัญชี"
         message={`ต้องการลบบัญชี ${member.name} (@${member.username}) หรือไม่?`} confirmText="ลบบัญชี"
         onCancel={() => setAskRemove(false)} onConfirm={() => { setAskRemove(false); removeMember(member.id); navigation.goBack(); }} />

@@ -5,8 +5,10 @@ import CameraTile from '../components/CameraTile';
 import { Chip, Segment } from '../components/ui';
 import { colors } from '../theme';
 
+// รูปแบบกริด: value = จำนวนคอลัมน์ (1, 2, 3) · label = จำนวนช่องบนปุ่ม (1, 4, 9)
 const LAYOUTS = [{ value: 1, label: '1' }, { value: 2, label: '4' }, { value: 3, label: '9' }];
 
+// หน้าภาพสด (UC-04): กรองตามสาขาและสลับขนาดกริด
 export default function LiveGridScreen({ navigation, route }) {
   const { visibleSites, visibleCameras } = useApp();
   const [siteId, setSiteId] = useState('all');
@@ -14,6 +16,7 @@ export default function LiveGridScreen({ navigation, route }) {
   useEffect(() => { if (route.params?.siteId) setSiteId(route.params.siteId); }, [route.params?.siteId]);
   const [cols, setCols] = useState(2);
 
+  // กล้องที่จะแสดง: ทุกสาขา หรือเฉพาะสาขาที่เลือก (มาจาก visibleCameras จึงเห็นเฉพาะสาขาที่มีสิทธิ์)
   const list = siteId === 'all' ? visibleCameras : visibleCameras.filter((c) => c.siteId === siteId);
   const online = list.filter((c) => c.online).length;
 
@@ -31,6 +34,7 @@ export default function LiveGridScreen({ navigation, route }) {
         <View style={{ width: 130 }}><Segment options={LAYOUTS} value={cols} onChange={setCols} /></View>
       </View>
 
+      {/* FlatList แสดงกล้องเป็นกริด · key={cols} บังคับให้สร้างใหม่เมื่อเปลี่ยนจำนวนคอลัมน์ (FlatList เปลี่ยน numColumns ระหว่างทางไม่ได้) */}
       <FlatList
         key={cols}
         data={list}

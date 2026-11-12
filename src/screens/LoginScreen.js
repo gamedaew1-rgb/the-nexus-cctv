@@ -14,6 +14,7 @@ const DEMO = [
   { role: 'member', username: 'member', password: 'member123' },
 ];
 
+// หน้าล็อกอิน (UC-01)
 export default function LoginScreen() {
   const { login } = useApp();
   const insets = useSafeAreaInsets();
@@ -22,16 +23,19 @@ export default function LoginScreen() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
 
+  // กดเข้าสู่ระบบ: ตรวจว่ากรอกครบ แล้วเรียก login() จาก AppContext · ไม่ผ่านจะแสดงข้อความ error
   const submit = () => {
     if (!username.trim() || !password) return setError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
     if (!login(username, password)) setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
   };
+  // แตะบัญชีทดสอบ → กรอกชื่อผู้ใช้และรหัสผ่านให้อัตโนมัติ
   const fill = (d) => { setUsername(d.username); setPassword(d.password); setError(''); };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        {/* ส่วนหัวสีฟ้า: โลโก้และชื่อแบรนด์ */}
         <View style={[styles.hero, { paddingTop: insets.top + 48 }]}>
           <View style={styles.bubble1} />
           <View style={styles.bubble2} />
@@ -57,6 +61,7 @@ export default function LoginScreen() {
             </Pressable>
           </View>
 
+          {/* กล่องข้อความ error แสดงเมื่อกรอกไม่ครบหรือรหัสผ่านผิด */}
           {!!error && (
             <View style={styles.errorBox}>
               <Ionicons name="alert-circle" size={16} color={colors.live} />
@@ -67,6 +72,7 @@ export default function LoginScreen() {
           <PrimaryButton label="เข้าสู่ระบบ" onPress={submit} style={{ marginTop: 6 }} />
         </View>
 
+        {/* กล่องบัญชีทดสอบ 3 บทบาท */}
         <View style={styles.demo}>
           <Text style={styles.demoTitle}>บัญชีทดสอบ (แตะเพื่อกรอก)</Text>
           {DEMO.map((d) => {

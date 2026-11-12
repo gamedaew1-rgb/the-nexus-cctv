@@ -4,6 +4,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius } from '../theme';
 
+// useClock = นาฬิกาที่อัปเดตทุก 1 วินาที (setInterval) และหยุดเมื่อออกจากหน้า (clearInterval) ใช้แสดงเวลาบนภาพกล้อง
 export function useClock() {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -15,6 +16,7 @@ export function useClock() {
 
 // ช่องแสดงภาพกล้อง 1 ตัว (ใช้ในหน้า Live grid)
 export default function CameraTile({ camera, onPress, compact }) {
+  // ตัวเล่นวิดีโอจาก streamUrl ของกล้อง: วนซ้ำ ปิดเสียง เล่นอัตโนมัติ · กล้องออฟไลน์ไม่โหลดวิดีโอ (null)
   const player = useVideoPlayer(camera.online ? camera.streamUrl : null, (p) => {
     p.loop = true;
     p.muted = true;
@@ -24,6 +26,7 @@ export default function CameraTile({ camera, onPress, compact }) {
 
   return (
     <Pressable style={styles.tile} onPress={onPress}>
+      {/* ออนไลน์ → แสดงวิดีโอ · ออฟไลน์ → แสดงไอคอนและคำว่า "ออฟไลน์" */}
       {camera.online ? (
         <VideoView style={StyleSheet.absoluteFill} player={player} contentFit="cover" nativeControls={false} />
       ) : (
@@ -33,6 +36,7 @@ export default function CameraTile({ camera, onPress, compact }) {
         </View>
       )}
 
+      {/* ป้าย LIVE และนาฬิกาซ้อนบนวิดีโอ (compact = กริด 9 ช่อง ซ่อนนาฬิกาเพราะพื้นที่น้อย) */}
       <View style={styles.topRow}>
         {camera.online && (
           <View style={styles.liveBadge}>

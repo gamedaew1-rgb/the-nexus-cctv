@@ -8,8 +8,10 @@ import { colors } from '../theme';
 // หน้าบัญชี: โปรไฟล์ สิทธิ์ของบทบาท พื้นที่คลาวด์ เมนูจัดการ
 export default function SettingsScreen({ navigation }) {
   const { currentUser, org, canManageTeam, canManageDevices, visibleSites, visibleCameras, storage, logout } = useApp();
+  // การตั้งค่าแอป (สวิตช์) ยังเป็นแบบจำลอง เก็บไว้เฉพาะในหน้านี้
   const [prefs, setPrefs] = useState({ push: true, sound: false, hd: false });
   const toggle = (k) => (v) => setPrefs((p) => ({ ...p, [k]: v }));
+  // เปอร์เซ็นต์พื้นที่คลาวด์ที่ใช้ไป
   const pct = Math.round((storage.usedGB / storage.totalGB) * 100);
   const role = ROLES[currentUser.role];
 
@@ -29,6 +31,7 @@ export default function SettingsScreen({ navigation }) {
       <SectionTitle>สิทธิ์ของคุณ</SectionTitle>
       <Card style={{ padding: 16 }}>
         <Text style={[styles.sub, { marginBottom: 10 }]}>{role.desc}</Text>
+        {/* ตารางสิทธิ์ (UC-07): ✓ สีเขียว = บทบาทนี้ทำได้ · ✗ สีเทา = ทำไม่ได้ */}
         {PERMISSIONS.map((p) => {
           const ok = p.roles.includes(currentUser.role);
           return (
@@ -41,6 +44,7 @@ export default function SettingsScreen({ navigation }) {
         <Text style={[styles.sub, { marginTop: 8 }]}>เข้าถึงได้ {visibleSites.length} สาขา · {visibleCameras.length} กล้อง</Text>
       </Card>
 
+      {/* เมนูการจัดการ แสดงเฉพาะเจ้าหน้าที่และ Admin */}
       {(canManageTeam || canManageDevices) && (
         <>
           <SectionTitle>การจัดการ</SectionTitle>

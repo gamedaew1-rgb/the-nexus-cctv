@@ -10,6 +10,7 @@ import { colors, radius, shadow } from '../theme';
 
 const ALERT_ICON = { motion: 'pulse', person: 'person', vehicle: 'car', offline: 'cloud-offline' };
 
+// คำทักทายตามช่วงเวลาของวัน
 function greeting() {
   const h = new Date().getHours();
   return h < 12 ? 'สวัสดีตอนเช้า' : h < 17 ? 'สวัสดีตอนบ่าย' : 'สวัสดีตอนเย็น';
@@ -27,9 +28,11 @@ export default function HomeScreen({ navigation }) {
     return () => setStatusBarStyle('dark');
   }, []));
 
+  // นับกล้องออนไลน์และเหตุการณ์ที่ยังไม่อ่าน สำหรับการ์ดสรุป
   const online = visibleCameras.filter((c) => c.online).length;
   const unread = visibleAlerts.filter((a) => !a.read).length;
 
+  // เมนูลัดแบบไอคอน: เมนูที่มีเงื่อนไข (canManageTeam / canManageDevices) แสดงเฉพาะบทบาทที่มีสิทธิ์ · .filter(Boolean) ตัดเมนูที่เป็น false ออก
   const actions = [
     { icon: 'grid', label: 'ภาพสด', onPress: () => navigation.navigate('Live') },
     { icon: 'play-circle', label: 'ย้อนหลัง', onPress: () => navigation.navigate('Playback') },
@@ -54,6 +57,7 @@ export default function HomeScreen({ navigation }) {
             <Ionicons name="notifications-outline" size={22} color="#fff" />
             {unread > 0 && <View style={styles.bellBadge}><Text style={styles.bellBadgeText}>{unread}</Text></View>}
           </Pressable>
+          {/* ปุ่มออกจากระบบ (UC-02) */}
           <Pressable style={[styles.bell, { marginLeft: 8 }]} onPress={() => setAskLogout(true)}>
             <Ionicons name="log-out-outline" size={22} color="#fff" />
           </Pressable>
@@ -89,6 +93,7 @@ export default function HomeScreen({ navigation }) {
 
         {/* สาขา */}
         <SectionTitle>สาขาของฉัน</SectionTitle>
+        {/* การ์ดแต่ละสาขาที่มีสิทธิ์เห็น: กดหัวการ์ด → หน้ากล้องของสาขานั้น · กดรูปย่อ → เปิดกล้องตัวนั้น */}
         {visibleSites.map((site) => {
           const cams = visibleCameras.filter((c) => c.siteId === site.id);
           const on = cams.filter((c) => c.online).length;
@@ -125,6 +130,7 @@ export default function HomeScreen({ navigation }) {
         </SectionTitle>
         <Card>
           {visibleAlerts.length === 0 && <Text style={styles.empty}>ยังไม่มีเหตุการณ์</Text>}
+          {/* แสดงเหตุการณ์ล่าสุด 3 รายการ */}
           {visibleAlerts.slice(0, 3).map((a, i, arr) => {
             const cam = getCamera(a.cameraId);
             return (
@@ -144,6 +150,7 @@ export default function HomeScreen({ navigation }) {
         </Card>
       </View>
 
+      {/* หน้าต่างยืนยันออกจากระบบ */}
       <ConfirmDialog visible={askLogout} danger icon="log-out-outline" title="ออกจากระบบ"
         message={`ต้องการออกจากบัญชี ${currentUser.username} หรือไม่?`} confirmText="ออกจากระบบ"
         onCancel={() => setAskLogout(false)} onConfirm={() => { setAskLogout(false); logout(); }} />
@@ -151,6 +158,7 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
+// Stat = ตัวเลข 1 ช่องในการ์ดสรุป
 function Stat({ value, label, color }) {
   return (
     <View style={styles.stat}>

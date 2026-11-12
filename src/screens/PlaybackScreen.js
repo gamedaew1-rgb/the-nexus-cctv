@@ -6,6 +6,7 @@ import { useApp } from '../AppContext';
 import { Chip, SectionTitle } from '../components/ui';
 import { colors, radius } from '../theme';
 
+// วันที่ที่มีข้อมูลจำลอง · toHours แปลง "14:30" เป็น 14.5 เพื่อคำนวณตำแหน่งบนไทม์ไลน์ · formatDate แสดงวันที่แบบไทย
 const DATES = ['2026-11-07', '2026-11-06', '2026-11-05'];
 const toHours = (t) => { const [h, m] = t.split(':').map(Number); return h + m / 60; };
 const formatDate = (d) => new Date(d).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
@@ -17,6 +18,7 @@ function Timeline({ items, selectedId, onSelect }) {
       <View style={styles.timeline}>
         {[6, 12, 18].map((h) => <View key={h} style={[styles.hourLine, { left: `${(h / 24) * 100}%` }]} />)}
         {items.map((r) => {
+          // ตำแหน่งซ้าย = เวลาเริ่ม ÷ 24 ชม. · ความกว้าง = ความยาวคลิป ÷ 24 ชม. (คิดเป็น %)
           const start = toHours(r.start);
           const width = Math.max(toHours(r.end) - start, 0.3);
           return (
@@ -36,19 +38,24 @@ function Timeline({ items, selectedId, onSelect }) {
   );
 }
 
+// หน้าดูย้อนหลัง (UC-05)
 export default function PlaybackScreen({ route }) {
   const { visibleCameras, recordings, getSite } = useApp();
   const [cameraId, setCameraId] = useState(route.params?.cameraId ?? visibleCameras[0]?.id);
   const [date, setDate] = useState(DATES[0]);
   const [selected, setSelected] = useState(null);
 
+  // ถ้าเปิดมาจากหน้ากล้อง ให้เลือกกล้องตัวนั้นอัตโนมัติ
   useEffect(() => { if (route.params?.cameraId) setCameraId(route.params.cameraId); }, [route.params?.cameraId]);
 
+  // คลิปของกล้องและวันที่ที่เลือก (useMemo คำนวณใหม่เฉพาะเมื่อกล้องหรือวันที่เปลี่ยน)
   const items = useMemo(() => recordings.filter((r) => r.cameraId === cameraId && r.date === date), [cameraId, date]);
   const player = useVideoPlayer(null, (p) => { p.loop = false; });
 
+  // เปลี่ยนกล้องหรือวันที่ → หยุดคลิปเดิม
   useEffect(() => { setSelected(null); player.pause(); }, [cameraId, date]);
 
+  // เล่นคลิป: เปลี่ยนวิดีโอในตัวเล่นเป็นคลิปที่เลือกแล้วเล่น
   const play = (rec) => { setSelected(rec); player.replace(rec.url); player.play(); };
 
   return (

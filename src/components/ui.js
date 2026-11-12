@@ -1,9 +1,11 @@
+// ui.js — ชิ้นส่วนหน้าตา (คอมโพเนนต์) ที่ใช้ซ้ำหลายหน้า เขียนครั้งเดียวแล้วเรียกใช้ทั่วแอป ทุกหน้าจึงหน้าตาเป็นแบบเดียวกัน
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ROLES } from '../AppContext';
 import { colors, radius, shadow } from '../theme';
 
+// Chip = ปุ่มทรงแคปซูล ใช้เลือกสาขาหรือตัวกรอง · active = true จะเป็นสีฟ้า
 export function Chip({ label, icon, active, onPress }) {
   return (
     <Pressable onPress={onPress} style={[s.chip, active && s.chipActive]}>
@@ -13,6 +15,7 @@ export function Chip({ label, icon, active, onPress }) {
   );
 }
 
+// Segment = ปุ่มเลือกแบบแบ่งช่อง (เช่น กริด 1/4/9 หรือบทบาท) · options = ตัวเลือก · value = ค่าที่เลือกอยู่
 export function Segment({ options, value, onChange }) {
   return (
     <View style={s.segment}>
@@ -25,6 +28,7 @@ export function Segment({ options, value, onChange }) {
   );
 }
 
+// RoleBadge = ป้ายบอกบทบาท ดึงสีและไอคอนจาก ROLES · light = true ใช้บนพื้นสีฟ้า
 export function RoleBadge({ role, light }) {
   const r = ROLES[role];
   return (
@@ -35,6 +39,7 @@ export function RoleBadge({ role, light }) {
   );
 }
 
+// SectionTitle = หัวข้อของแต่ละส่วน · right = ของที่วางชิดขวา เช่น ลิงก์ "ดูทั้งหมด"
 export const SectionTitle = ({ children, style, right }) => (
   <View style={[s.sectionRow, style]}>
     <Text style={s.section}>{children}</Text>
@@ -42,8 +47,10 @@ export const SectionTitle = ({ children, style, right }) => (
   </View>
 );
 
+// Card = กล่องพื้นขาว มุมโค้ง มีเงา
 export const Card = ({ children, style }) => <View style={[s.card, style]}>{children}</View>;
 
+// ListRow = แถวในเมนู: ไอคอน + ชื่อ + คำอธิบาย + ของด้านขวา (สวิตช์/ลูกศร) · มี onPress = กดได้
 export function ListRow({ icon, iconColor, title, subtitle, right, onPress, last }) {
   return (
     <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [s.row, !last && s.rowBorder, pressed && { backgroundColor: colors.surfaceAlt }]}>
@@ -57,6 +64,7 @@ export function ListRow({ icon, iconColor, title, subtitle, right, onPress, last
   );
 }
 
+// PrimaryButton = ปุ่มหลัก · danger = ปุ่มแดง (ลบ/ออกจากระบบ) · secondary = ปุ่มฟ้าอ่อน
 export function PrimaryButton({ label, icon, onPress, danger, secondary, disabled, style }) {
   const fg = danger ? colors.live : secondary ? colors.accent : '#fff';
   return (
@@ -68,6 +76,7 @@ export function PrimaryButton({ label, icon, onPress, danger, secondary, disable
   );
 }
 
+// Avatar = รูปโปรไฟล์ แสดงตัวอักษรแรกของชื่อ
 export function Avatar({ name, size = 42, dark }) {
   return (
     <View style={[s.avatar, { width: size, height: size, borderRadius: size * 0.32 }, dark && { backgroundColor: colors.accent }]}>
@@ -76,6 +85,7 @@ export function Avatar({ name, size = 42, dark }) {
   );
 }
 
+// สไตล์ของคอมโพเนนต์ด้านบน (StyleSheet ของ React Native คล้าย CSS แต่เขียนเป็น JavaScript)
 const s = StyleSheet.create({
   chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.surface, marginRight: 8, borderWidth: 1, borderColor: colors.border },
   chipActive: { backgroundColor: colors.accent, borderColor: colors.accent },

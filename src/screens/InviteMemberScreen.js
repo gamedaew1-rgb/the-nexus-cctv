@@ -6,6 +6,7 @@ import { Card, ListRow, PrimaryButton, SectionTitle, Segment } from '../componen
 import { showAlert } from '../utils/dialog';
 import { colors, radius } from '../theme';
 
+// Field = ช่องกรอกข้อมูลพร้อมไอคอน
 function Field({ icon, ...props }) {
   return (
     <View style={styles.inputWrap}>
@@ -20,11 +21,13 @@ function Field({ icon, ...props }) {
 export default function InviteMemberScreen({ navigation }) {
   const { sites, addMember, assignableRoles, usernameTaken } = useApp();
   const [form, setForm] = useState({ name: '', contact: '', username: '', password: '' });
+  // บทบาทเริ่มต้น = สมาชิก · ตัวเลือกบทบาทมาจาก assignableRoles ตามสิทธิ์ของผู้ใช้
   const [role, setRole] = useState(assignableRoles.includes('member') ? 'member' : assignableRoles[0]);
   const [siteIds, setSiteIds] = useState([]);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
   const toggle = (id, on) => setSiteIds((l) => (on ? [...l, id] : l.filter((x) => x !== id)));
 
+  // ตรวจข้อมูลก่อนสร้างบัญชี (UC-08): กรอกครบ, ชื่อผู้ใช้ไม่มีช่องว่างและไม่ซ้ำ, รหัสผ่านอย่างน้อย 4 ตัว, เลือกสาขาอย่างน้อย 1 แห่ง (ยกเว้น Admin)
   const submit = () => {
     const { name, contact, username, password } = form;
     if (!name.trim() || !username.trim() || !password) return showAlert('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ ชื่อผู้ใช้ และรหัสผ่าน');

@@ -5,6 +5,7 @@ import { useApp } from '../AppContext';
 import { Chip } from '../components/ui';
 import { colors, radius } from '../theme';
 
+// ไอคอนและสีของเหตุการณ์แต่ละประเภท
 const TYPES = {
   motion: { icon: 'pulse', color: colors.warning },
   person: { icon: 'person', color: colors.accent },
@@ -12,15 +13,18 @@ const TYPES = {
   offline: { icon: 'cloud-offline', color: colors.live },
 };
 
+// หน้าเหตุการณ์ (UC-06)
 export default function AlertsScreen({ navigation }) {
   const { visibleAlerts, setAlerts, getCamera, getSite } = useApp();
   const [filter, setFilter] = useState('all');
   const list = filter === 'unread' ? visibleAlerts.filter((a) => !a.read) : visibleAlerts;
 
+  // กดเหตุการณ์ → ทำเครื่องหมายว่าอ่านแล้ว แล้วเปิดกล้องที่เกิดเหตุ
   const open = (alert) => {
     setAlerts((all) => all.map((a) => (a.id === alert.id ? { ...a, read: true } : a)));
     navigation.navigate('CameraView', { cameraId: alert.cameraId });
   };
+  // อ่านทั้งหมด → ตัวเลขแจ้งเตือนบนแท็บหายไป
   const markAllRead = () => setAlerts((all) => all.map((a) => ({ ...a, read: true })));
 
   return (

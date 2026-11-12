@@ -9,6 +9,7 @@ import { showAlert } from '../utils/dialog';
 import { colors } from '../theme';
 import { SCHEDULES, SENSITIVITY } from './AlarmSettingsScreen';
 
+// ControlButton = ปุ่มวงกลมใต้ภาพ · active = true เป็นสีแดง
 function ControlButton({ icon, label, active, onPress }) {
   return (
     <Pressable style={styles.ctrl} onPress={onPress}>
@@ -20,6 +21,7 @@ function ControlButton({ icon, label, active, onPress }) {
   );
 }
 
+// หน้าดูกล้องตัวเดียว (UC-04): รับ cameraId จากหน้าที่กดเข้ามา (route.params)
 export default function CameraViewScreen({ route, navigation }) {
   const { getCamera, getSite, canEditAlarm } = useApp();
   const camera = getCamera(route.params.cameraId);
@@ -30,6 +32,7 @@ export default function CameraViewScreen({ route, navigation }) {
 
   const player = useVideoPlayer(camera.online ? camera.streamUrl : null, (p) => { p.loop = true; p.muted = true; p.play(); });
 
+  // ตั้งชื่อหัวหน้าจอเป็นชื่อกล้อง และเปิด/ปิดเสียงตามปุ่ม
   useEffect(() => navigation.setOptions({ title: camera.name }), [camera.name]);
   useEffect(() => { player.muted = muted; }, [muted]);
 
@@ -60,6 +63,7 @@ export default function CameraViewScreen({ route, navigation }) {
       </View>
 
       <View style={styles.controls}>
+        {/* ถ่ายภาพและพูดคุยยังเป็นแบบจำลอง (ต้องมีกล้องจริง) · อัดคลิปแสดงป้าย REC · เสียงสลับเปิด/ปิด */}
         <ControlButton icon="camera" label="ถ่ายภาพ" onPress={() => showAlert('ถ่ายภาพ', 'บันทึกภาพแล้ว (จำลอง)')} />
         <ControlButton icon={recording ? 'stop' : 'radio-button-on'} label={recording ? 'หยุด' : 'อัดคลิป'} active={recording} onPress={() => setRecording((r) => !r)} />
         <ControlButton icon={muted ? 'volume-mute' : 'volume-high'} label="เสียง" onPress={() => setMuted((m) => !m)} />
@@ -69,8 +73,10 @@ export default function CameraViewScreen({ route, navigation }) {
       <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
         <SectionTitle>การตั้งค่ากล้อง</SectionTitle>
         <Card>
+          {/* ไปหน้าย้อนหลังของกล้องนี้ (ส่ง cameraId ไปที่แท็บ Playback) */}
           <ListRow icon="time" title="ดูย้อนหลัง" subtitle="ไทม์ไลน์ 24 ชั่วโมง"
             onPress={() => navigation.navigate('Main', { screen: 'Playback', params: { cameraId: camera.id } })} last={!canEditAlarm} />
+          {/* เมนูตั้งค่าการแจ้งเตือนแสดงเฉพาะ Admin (canEditAlarm) */}
           {canEditAlarm && (
             <ListRow icon="shield-checkmark" title="การแจ้งเตือน"
               subtitle={a.enabled ? `${SCHEDULES.find((x) => x.value === a.schedule).label} · ความไว${SENSITIVITY.find((x) => x.value === a.sensitivity).label}` : 'ปิดอยู่'}

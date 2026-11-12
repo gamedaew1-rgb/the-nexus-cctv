@@ -57,3 +57,12 @@ npx expo start -c
 - เปลี่ยน `streamUrl` ใน `src/data/mockData.js` เป็นลิงก์ **HLS (.m3u8)** ได้ทันที
 - กล้องที่ส่ง **RTSP** โดยตรง `expo-video` เล่นไม่ได้ ต้องให้ Backend/NVR แปลงเป็น HLS หรือ WebRTC ก่อน
 - ฟังก์ชันใน `src/AppContext.js` (login, updateCamera, addMember ฯลฯ) คือจุดที่จะเปลี่ยนเป็นเรียก API
+
+## ไฟล์ตั้งค่า (ไฟล์ JSON เขียนคอมเมนต์ในไฟล์ไม่ได้ จึงอธิบายไว้ที่นี่)
+| ไฟล์ | หน้าที่ |
+|---|---|
+| `package.json` | รายชื่อแพ็กเกจและคำสั่ง: `npm run setup-all` ติดตั้งแพ็กเกจที่ตรงกับ Expo SDK 58 · `npm run web` เปิดบนเว็บ · `npm run build:web` สร้างไฟล์เว็บในโฟลเดอร์ `dist` · `"main": "index.js"` บอกว่าแอปเริ่มที่ไฟล์ไหน |
+| `app.json` | ข้อมูลแอปของ Expo: ชื่อแอป, ธีม, ปลั๊กอิน `expo-video` |
+| `vercel.json` | วิธีที่ Vercel build เว็บ: ติดตั้งแพ็กเกจ → `npm run build:web` → เผยแพร่โฟลเดอร์ `dist` |
+
+ไฟล์ `.js` ทุกไฟล์มีคอมเมนต์ภาษาไทยอธิบายการทำงานแต่ละจุด และระบุรหัส Use case (UC-01 ถึง UC-13) ตรงจุดที่โค้ดทำ Use case นั้น

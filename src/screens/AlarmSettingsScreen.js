@@ -5,6 +5,7 @@ import { useApp } from '../AppContext';
 import { Card, Chip, PrimaryButton, SectionTitle, Segment } from '../components/ui';
 import { colors, radius } from '../theme';
 
+// ตัวเลือกช่วงเวลาแจ้งเตือนและระดับความไว (หน้า CameraView ใช้ซ้ำเพื่อแสดงสรุป)
 export const SCHEDULES = [
   { value: 'always', label: 'ตลอด 24 ชม.' },
   { value: 'afterHours', label: 'นอกเวลาทำการ' },
@@ -20,13 +21,16 @@ export const SENSITIVITY = [
 export default function AlarmSettingsScreen({ route, navigation }) {
   const { getCamera, updateCamera } = useApp();
   const camera = getCamera(route.params.cameraId);
+  // draft = สำเนาการตั้งค่าที่กำลังแก้ จะยังไม่บันทึกจริงจนกว่าจะกด "บันทึก"
   const [draft, setDraft] = useState(camera.alarm);
+  // set = แก้บางค่าใน draft · toggleZone = สลับเปิด/ปิดโซนช่องที่ i
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const toggleZone = (i) => set({ zones: draft.zones.map((z, idx) => (idx === i ? !z : z)) });
 
   const player = useVideoPlayer(camera.online ? camera.streamUrl : null, (p) => { p.muted = true; p.loop = true; p.play(); });
   const activeZones = draft.zones.filter(Boolean).length;
 
+  // บันทึก: เขียน draft ลงข้อมูลกล้องใน AppContext แล้วย้อนกลับ (UC-13)
   const save = () => { updateCamera(camera.id, { alarm: draft }); navigation.goBack(); };
 
   return (
@@ -39,6 +43,7 @@ export default function AlarmSettingsScreen({ route, navigation }) {
         <Switch value={draft.enabled} onValueChange={(v) => set({ enabled: v })} trackColor={{ true: colors.accent }} />
       </Card>
 
+      {/* ปิดการแจ้งเตือนอยู่ → ส่วนตั้งค่าด้านล่างจางลงและกดไม่ได้ */}
       <View style={{ opacity: draft.enabled ? 1 : 0.4 }} pointerEvents={draft.enabled ? 'auto' : 'none'}>
         <SectionTitle>ช่วงเวลาที่แจ้งเตือน</SectionTitle>
         <View style={styles.wrap}>
@@ -56,6 +61,7 @@ export default function AlarmSettingsScreen({ route, navigation }) {
         <Text style={[styles.dim, { marginBottom: 10 }]}>แตะช่องเพื่อเปิด/ปิดการตรวจจับในบริเวณนั้น</Text>
         <View style={styles.zoneBox}>
           {camera.online && <VideoView style={StyleSheet.absoluteFill} player={player} contentFit="cover" nativeControls={false} />}
+          {/* ตาราง 4×4 ซ้อนบนภาพกล้อง แตะช่องเพื่อเปิด/ปิด (ช่องที่เปิดเป็นสีฟ้า) */}
           <View style={styles.grid}>
             {draft.zones.map((on, i) => (
               <Pressable key={i} onPress={() => toggleZone(i)} style={[styles.cell, on && styles.cellOn]} />
