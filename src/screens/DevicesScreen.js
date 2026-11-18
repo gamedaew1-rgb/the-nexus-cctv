@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../AppContext';
-import { Chip, PrimaryButton, SectionTitle } from '../components/ui';
+import { Chip, ConfirmDialog, PrimaryButton, SectionTitle } from '../components/ui';
 import { showAlert } from '../utils/dialog';
 import { colors, radius } from '../theme';
 
-// จัดการอุปกรณ์: เลือกหลายตัว → อัปเดตเฟิร์มแวร์ / ย้ายสาขา พร้อมกัน
-export default function DevicesScreen() {
-  const { visibleCameras, visibleSites, getSite, updateCameras } = useApp();
+// จัดการอุปกรณ์: เพิ่มกล้อง · เลือกหลายตัว → อัปเดตเฟิร์มแวร์ / ย้ายสาขา / ลบ พร้อมกัน
+export default function DevicesScreen({ navigation }) {
+  const { visibleCameras, visibleSites, getSite, updateCameras, removeCameras } = useApp();
   const [selected, setSelected] = useState([]);
   const [moving, setMoving] = useState(false);
+  const [askDelete, setAskDelete] = useState(false);
 
   const toggle = (id) => setSelected((l) => (l.includes(id) ? l.filter((x) => x !== id) : [...l, id]));
   // กล้องที่เฟิร์มแวร์ยังไม่ใช่เวอร์ชันล่าสุด
@@ -35,15 +36,31 @@ export default function DevicesScreen() {
     setMoving(false);
   };
 
+  // ลบกล้องที่เลือก (UC-15): ลบกล้องและเหตุการณ์ของกล้องนั้นออกจากระบบ
+  const deleteSelected = () => {
+    const n = selected.length;
+    removeCameras(selected);
+    setSelected([]);
+    setAskDelete(false);
+    showAlert('ลบกล้องแล้ว', `ลบ ${n} กล้องออกจากระบบแล้ว`);
+  };
+
+  const selectedNames = visibleCameras.filter((c) => selected.includes(c.id)).map((c) => c.name).join(', ');
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 160 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 220 }}>
+        {/* ปุ่มเพิ่มกล้องใหม่ (UC-14) */}
+        <PrimaryButton label="เพิ่มกล้องใหม่" icon="add-circle" onPress={() => navigation.navigate('AddCamera')} style={{ marginBottom: 12 }} />
+
         {needsUpdate.length > 0 && (
           <Pressable style={styles.banner} onPress={() => setSelected(needsUpdate.map((c) => c.id))}>
             <Ionicons name="arrow-up-circle" size={22} color={colors.warning} />
             <Text style={styles.bannerText}>มี {needsUpdate.length} กล้องที่มีเฟิร์มแวร์ใหม่ · แตะเพื่อเลือกทั้งหมด</Text>
           </Pressable>
         )}
+
+        {visibleCameras.length === 0 && <Text style={styles.empty}>ยังไม่มีกล้อง กด "เพิ่มกล้องใหม่" เพื่อเริ่มต้น</Text>}
 
         {visibleSites.map((site) => {
           const cams = visibleCameras.filter((c) => c.siteId === site.id);
@@ -94,11 +111,17 @@ export default function DevicesScreen() {
                 <PrimaryButton label="อัปเดตเฟิร์มแวร์" icon="cloud-download" onPress={updateFirmware} style={{ flex: 1, marginRight: 8 }} />
                 <PrimaryButton label="ย้ายสาขา" icon="swap-horizontal" secondary onPress={() => setMoving(true)} style={{ flex: 1 }} />
               </View>
+              <PrimaryButton label={`ลบกล้องที่เลือก (${selected.length})`} icon="trash-outline" danger onPress={() => setAskDelete(true)} style={{ marginTop: 8 }} />
               <Text style={styles.cancel} onPress={() => setSelected([])}>ยกเลิกการเลือก</Text>
             </>
           )}
         </View>
       )}
+
+      {/* ยืนยันก่อนลบกล้อง */}
+      <ConfirmDialog visible={askDelete} danger icon="trash-outline" title={`ลบ ${selected.length} กล้อง`}
+        message={`${selectedNames}\nภาพสดและเหตุการณ์ของกล้องเหล่านี้จะถูกลบด้วย`} confirmText="ลบกล้อง"
+        onCancel={() => setAskDelete(false)} onConfirm={deleteSelected} />
     </View>
   );
 }
@@ -117,4 +140,5 @@ const styles = StyleSheet.create({
   actionBar: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, padding: 16, paddingBottom: 28 },
   actionTitle: { color: colors.text, fontWeight: '700', fontSize: 15 },
   cancel: { color: colors.textDim, textAlign: 'center', marginTop: 12 },
+  empty: { color: colors.textDim, textAlign: 'center', marginTop: 24 },
 });

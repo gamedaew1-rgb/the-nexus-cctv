@@ -40,6 +40,7 @@ export default function HomeScreen({ navigation }) {
     canManageTeam && { icon: 'person-add', label: 'เพิ่มสมาชิก', onPress: () => navigation.navigate('InviteMember') },
     canManageTeam && { icon: 'people', label: 'สมาชิก', onPress: () => navigation.navigate('Team') },
     canManageDevices && { icon: 'hardware-chip', label: 'อุปกรณ์', onPress: () => navigation.navigate('Devices') },
+    canManageDevices && { icon: 'add-circle', label: 'เพิ่มกล้อง', onPress: () => navigation.navigate('AddCamera') },
     { icon: 'person-circle', label: 'บัญชี', onPress: () => navigation.navigate('More') },
   ].filter(Boolean);
 

@@ -51,7 +51,7 @@ export default function SettingsScreen({ navigation }) {
           <Card>
             {canManageTeam && <ListRow icon="person-add" title="เพิ่มสมาชิก" subtitle="สร้างบัญชีล็อกอินให้คนในองค์กร" onPress={() => navigation.navigate('InviteMember')} />}
             {canManageTeam && <ListRow icon="people" title="สมาชิกและสาขา" subtitle="ดูและแก้ไขสิทธิ์" onPress={() => navigation.navigate('Team')} last={!canManageDevices} />}
-            {canManageDevices && <ListRow icon="hardware-chip" title="จัดการอุปกรณ์" subtitle="เฟิร์มแวร์ ย้ายสาขา" onPress={() => navigation.navigate('Devices')} last />}
+            {canManageDevices && <ListRow icon="hardware-chip" title="จัดการอุปกรณ์" subtitle="เพิ่ม ลบ ย้ายสาขา อัปเดตเฟิร์มแวร์" onPress={() => navigation.navigate('Devices')} last />}
           </Card>
         </>
       )}

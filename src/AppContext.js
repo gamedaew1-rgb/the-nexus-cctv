@@ -18,7 +18,7 @@ export const PERMISSIONS = [
   { label: 'ดูภาพสดและย้อนหลัง', roles: ['admin', 'staff', 'member'] },
   { label: 'เพิ่มสมาชิก', roles: ['admin', 'staff'] },
   { label: 'กำหนดบทบาท Admin / เจ้าหน้าที่', roles: ['admin'] },
-  { label: 'จัดการอุปกรณ์', roles: ['admin'] },
+  { label: 'จัดการอุปกรณ์ (เพิ่ม ลบ ย้าย อัปเดตกล้อง)', roles: ['admin'] },
   { label: 'ตั้งค่าการแจ้งเตือนกล้อง', roles: ['admin'] },
 ];
 
@@ -52,6 +52,21 @@ export function AppProvider({ children }) {
   const updateCameras = (ids, patch) =>
     setCameras((list) => list.map((c) => (ids.includes(c.id) ? { ...c, ...(typeof patch === 'function' ? patch(c) : patch) } : c)));
 
+  // เพิ่มกล้องใหม่: สร้างรหัสไม่ซ้ำจากเวลาปัจจุบัน และตั้งค่าการแจ้งเตือนเริ่มต้น (เปิด, ตลอด 24 ชม., ความไวกลาง, เปิดทุกโซน)
+  const addCamera = (cam) =>
+    setCameras((list) => [...list, {
+      ...cam,
+      id: 'cam' + Date.now(),
+      online: true,
+      alarm: { enabled: true, schedule: 'always', sensitivity: 'medium', zones: Array(16).fill(true) },
+    }]);
+
+  // ลบกล้องหลายตัวพร้อมกัน และลบเหตุการณ์แจ้งเตือนของกล้องเหล่านั้นด้วย
+  const removeCameras = (ids) => {
+    setCameras((list) => list.filter((c) => !ids.includes(c.id)));
+    setAlerts((list) => list.filter((a) => !ids.includes(a.cameraId)));
+  };
+
   // ล็อกอิน: หาบัญชีที่ชื่อผู้ใช้ (ไม่สนตัวพิมพ์เล็ก/ใหญ่) และรหัสผ่านตรงกัน ถ้าเจอจะจำผู้ใช้ไว้และคืนค่า true · ในอนาคตเปลี่ยนตรงนี้เป็นเรียก API ของ Backend
   const login = (username, password) => {
     const u = members.find((m) => m.username.toLowerCase() === username.trim().toLowerCase() && m.password === password);
@@ -69,6 +84,10 @@ export function AppProvider({ children }) {
     getSite: (id) => sites.find((s) => s.id === id),
     updateCamera: (id, patch) => updateCameras([id], patch),
     updateCameras,
+    addCamera,
+    removeCameras,
+    // ชื่อกล้องซ้ำในสาขาเดียวกันหรือไม่ (ไม่สนช่องว่างหัวท้าย)
+    cameraNameTaken: (siteId, name) => cameras.some((c) => c.siteId === siteId && c.name.trim() === name.trim()),
     updateMember: (id, patch) => setMembers((list) => list.map((m) => (m.id === id ? { ...m, ...patch } : m))),
     // เพิ่มสมาชิกใหม่ ใช้เวลาปัจจุบัน (Date.now) สร้างรหัสที่ไม่ซ้ำ
     addMember: (m) => setMembers((list) => [...list, { ...m, id: 'm' + Date.now() }]),

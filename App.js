@@ -20,6 +20,7 @@ import TeamScreen from './src/screens/TeamScreen';
 import MemberDetailScreen from './src/screens/MemberDetailScreen';
 import InviteMemberScreen from './src/screens/InviteMemberScreen';
 import DevicesScreen from './src/screens/DevicesScreen';
+import AddCameraScreen from './src/screens/AddCameraScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 // Stack = เปิดหน้าซ้อนกันและมีปุ่มย้อนกลับ · Tab = แถบเมนูด้านล่าง
@@ -88,6 +89,7 @@ function RootNavigator() {
           <Stack.Screen name="MemberDetail" component={MemberDetailScreen} options={{ title: 'ข้อมูลสมาชิก' }} />
           <Stack.Screen name="InviteMember" component={InviteMemberScreen} options={{ title: 'เพิ่มสมาชิก', presentation: 'modal' }} />
           <Stack.Screen name="Devices" component={DevicesScreen} options={{ title: 'จัดการอุปกรณ์' }} />
+          <Stack.Screen name="AddCamera" component={AddCameraScreen} options={{ title: 'เพิ่มกล้อง', presentation: 'modal' }} />
         </>
       )}
     </Stack.Navigator>
