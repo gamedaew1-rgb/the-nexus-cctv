@@ -1,12 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, FlatList, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../AppContext';
 import CameraTile from '../components/CameraTile';
-import { Chip, Segment } from '../components/ui';
-import { colors } from '../theme';
+import { Chip } from '../components/ui';
+import { colors, radius } from '../theme';
 
-// รูปแบบกริด: value = จำนวนคอลัมน์ (1, 2, 3) · label = จำนวนช่องบนปุ่ม (1, 4, 9)
-const LAYOUTS = [{ value: 1, label: '1' }, { value: 2, label: '4' }, { value: 3, label: '9' }];
+// รูปแบบกริด: value = จำนวนคอลัมน์ (1, 2, 3) · label = จำนวนช่องบนปุ่ม (1, 4, 9) · icon = ไอคอนรูปกริดที่แสดงคู่กับตัวเลข
+const LAYOUTS = [
+  { value: 1, label: '1', icon: 'square' },
+  { value: 2, label: '4', icon: 'grid' },
+  { value: 3, label: '9', icon: 'apps' },
+];
+
+// ปุ่มเลือกมุมมองกริด: ไอคอน + "x ช่อง" · ปุ่มที่เลือกอยู่เป็นพื้นฟ้าตัวอักษรขาว ส่วนปุ่มอื่นเป็นพื้นขาวมีขอบ
+function LayoutPicker({ value, onChange }) {
+  return (
+    <View style={styles.picker}>
+      {LAYOUTS.map((o) => {
+        const active = value === o.value;
+        return (
+          <Pressable key={o.value} onPress={() => onChange(o.value)}
+            accessibilityRole="button" accessibilityLabel={`แสดง ${o.label} ช่อง`} accessibilityState={{ selected: active }}
+            style={({ pressed }) => [styles.pickBtn, active && styles.pickActive, pressed && !active && { backgroundColor: colors.surfaceAlt }]}>
+            <Ionicons name={active ? o.icon : `${o.icon}-outline`} size={14} color={active ? '#fff' : colors.textDim} />
+            <Text style={[styles.pickText, active && { color: '#fff' }]}>{o.label} ช่อง</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 // หน้าภาพสด (UC-04): กรองตามสาขาและสลับขนาดกริด
 export default function LiveGridScreen({ navigation, route }) {
@@ -31,7 +55,7 @@ export default function LiveGridScreen({ navigation, route }) {
         <Text style={styles.summary}>
           <Text style={{ color: colors.online }}>● </Text>{online}/{list.length} ออนไลน์
         </Text>
-        <View style={{ width: 130 }}><Segment options={LAYOUTS} value={cols} onChange={setCols} /></View>
+        <LayoutPicker value={cols} onChange={setCols} />
       </View>
 
       {/* FlatList แสดงกล้องเป็นกริด · key={cols} บังคับให้สร้างใหม่เมื่อเปลี่ยนจำนวนคอลัมน์ (FlatList เปลี่ยน numColumns ระหว่างทางไม่ได้) */}
@@ -58,5 +82,9 @@ const styles = StyleSheet.create({
   sites: { paddingHorizontal: 12, paddingTop: 12 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 10 },
   summary: { color: colors.textDim, fontSize: 14 },
+  picker: { flexDirection: 'row', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm + 4, padding: 3 },
+  pickBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 7, borderRadius: radius.sm, marginLeft: 2 },
+  pickActive: { backgroundColor: colors.accent },
+  pickText: { color: colors.textDim, fontWeight: '700', fontSize: 13, marginLeft: 5 },
   empty: { color: colors.textDim, textAlign: 'center', marginTop: 40 },
 });
