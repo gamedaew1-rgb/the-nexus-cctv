@@ -1,4 +1,4 @@
-// AddCameraScreen.js — หน้าเพิ่มกล้องใหม่ (UC-14, Admin เท่านั้น)
+// AddCameraScreen.js — หน้าเพิ่มกล้องใหม่ (UC-14) · Admin เพิ่มได้ทันที · เจ้าหน้าที่องค์กรส่งเป็นคำขอให้ Admin อนุมัติ (UC-16)
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,7 +27,7 @@ function Field({ icon, ...props }) {
 }
 
 export default function AddCameraScreen({ navigation, route }) {
-  const { visibleSites, addCamera, cameraNameTaken, getSite } = useApp();
+  const { visibleSites, manageCameras, needsApproval, cameraNameTaken, getSite } = useApp();
   const [name, setName] = useState('');
   // ถ้าเปิดมาจากสาขาใด ให้เลือกสาขานั้นไว้ก่อน
   const [siteId, setSiteId] = useState(route.params?.siteId ?? null);
@@ -43,15 +43,18 @@ export default function AddCameraScreen({ navigation, route }) {
     if (url && !/^https?:\/\//i.test(url)) return showAlert('ลิงก์ไม่ถูกต้อง', 'ลิงก์สตรีมต้องขึ้นต้นด้วย http:// หรือ https://');
 
     const m = MODELS.find((x) => x.name === model);
-    addCamera({
+    const camera = {
       name: name.trim(),
       siteId,
       model,
       firmware: m.firmware,
       latestFirmware: m.firmware,
       streamUrl: url || SAMPLE_STREAM,
-    });
-    showAlert('เพิ่มกล้องแล้ว', `${name.trim()} · ${getSite(siteId).name}`);
+    };
+    // Admin → เพิ่มทันที · เจ้าหน้าที่ → ส่งคำขอ
+    const result = manageCameras({ type: 'add', camera }, `เพิ่มกล้อง: ${camera.name} · ${getSite(siteId).name} (${model})`);
+    if (result === 'requested') showAlert('ส่งคำขอแล้ว', 'รอ Admin อนุมัติ เมื่ออนุมัติแล้วกล้องจะขึ้นในรายการ');
+    else showAlert('เพิ่มกล้องแล้ว', `${camera.name} · ${getSite(siteId).name}`);
     navigation.goBack();
   };
 
@@ -82,7 +85,7 @@ export default function AddCameraScreen({ navigation, route }) {
       <Field icon="link-outline" placeholder="https://.../live.m3u8" value={streamUrl} onChangeText={setStreamUrl} autoCapitalize="none" autoCorrect={false} />
       <Text style={styles.note}>ใส่ลิงก์ HLS (.m3u8) หรือ MP4 ของกล้อง · ถ้าเว้นว่างจะใช้วิดีโอตัวอย่าง</Text>
 
-      <PrimaryButton label="เพิ่มกล้อง" icon="add-circle" onPress={submit} style={{ marginTop: 24 }} />
+      <PrimaryButton label={needsApproval ? 'ส่งคำขอเพิ่มกล้อง' : 'เพิ่มกล้อง'} icon={needsApproval ? 'paper-plane' : 'add-circle'} onPress={submit} style={{ marginTop: 24 }} />
     </ScrollView>
   );
 }

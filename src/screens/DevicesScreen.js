@@ -7,8 +7,9 @@ import { showAlert } from '../utils/dialog';
 import { colors, radius } from '../theme';
 
 // จัดการอุปกรณ์: เพิ่มกล้อง · เลือกหลายตัว → อัปเดตเฟิร์มแวร์ / ย้ายสาขา / ลบ พร้อมกัน
+// Admin ทำได้ทันที · เจ้าหน้าที่องค์กรกดแล้วจะกลายเป็น "คำขอ" ส่งให้ Admin อนุมัติก่อน (UC-16)
 export default function DevicesScreen({ navigation }) {
-  const { visibleCameras, visibleSites, getSite, updateCameras, removeCameras } = useApp();
+  const { visibleCameras, visibleSites, getSite, manageCameras, needsApproval, visibleRequests, pendingCount } = useApp();
   const [selected, setSelected] = useState([]);
   const [moving, setMoving] = useState(false);
   const [askDelete, setAskDelete] = useState(false);
@@ -17,21 +18,29 @@ export default function DevicesScreen({ navigation }) {
   // กล้องที่เฟิร์มแวร์ยังไม่ใช่เวอร์ชันล่าสุด
   const needsUpdate = visibleCameras.filter((c) => c.firmware !== c.latestFirmware);
   const selectedNeedUpdate = selected.filter((id) => needsUpdate.some((c) => c.id === id));
+  // กล้องที่มีคำขอค้างอยู่ (แสดงป้าย "รออนุมัติ")
+  const pendingIds = visibleRequests.filter((r) => r.status === 'pending').flatMap((r) => r.action.ids ?? []);
+  const nameOf = (ids) => visibleCameras.filter((c) => ids.includes(c.id)).map((c) => c.name).join(', ');
+
+  // แจ้งผลหลังสั่งงาน: Admin = ทำแล้ว · เจ้าหน้าที่ = ส่งคำขอแล้ว รออนุมัติ
+  const notify = (result, doneTitle, doneMsg) => {
+    if (result === 'requested') showAlert('ส่งคำขอแล้ว', 'รอ Admin อนุมัติ ดูสถานะได้ที่เมนู "คำขอของฉัน"');
+    else showAlert(doneTitle, doneMsg);
+  };
 
   // อัปเดตเฟิร์มแวร์ (UC-12): ตั้งสถานะ "กำลังอัปเดต" แล้วจำลองเวลา 2.5 วินาทีก่อนเปลี่ยนเป็นเวอร์ชันล่าสุด
   const updateFirmware = () => {
     const ids = selectedNeedUpdate;
     if (ids.length === 0) return showAlert('ไม่มีอะไรต้องอัปเดต', 'กล้องที่เลือกใช้เฟิร์มแวร์ล่าสุดแล้ว');
-    updateCameras(ids, { updating: true });
+    const result = manageCameras({ type: 'firmware', ids }, `อัปเดตเฟิร์มแวร์: ${nameOf(ids)}`);
     setSelected([]);
-    // จำลองเวลาอัปเดต
-    setTimeout(() => updateCameras(ids, (c) => ({ updating: false, firmware: c.latestFirmware })), 2500);
+    if (result === 'requested') notify(result);
   };
 
   // ย้ายกล้องที่เลือกทั้งหมดไปสาขาใหม่
   const moveTo = (siteId) => {
-    updateCameras(selected, { siteId });
-    showAlert('ย้ายสำเร็จ', `ย้าย ${selected.length} กล้องไปที่ ${getSite(siteId).name} แล้ว`);
+    const result = manageCameras({ type: 'move', ids: selected, siteId }, `ย้ายกล้อง: ${nameOf(selected)} → ${getSite(siteId).name}`);
+    notify(result, 'ย้ายสำเร็จ', `ย้าย ${selected.length} กล้องไปที่ ${getSite(siteId).name} แล้ว`);
     setSelected([]);
     setMoving(false);
   };
@@ -39,10 +48,10 @@ export default function DevicesScreen({ navigation }) {
   // ลบกล้องที่เลือก (UC-15): ลบกล้องและเหตุการณ์ของกล้องนั้นออกจากระบบ
   const deleteSelected = () => {
     const n = selected.length;
-    removeCameras(selected);
+    const result = manageCameras({ type: 'remove', ids: selected }, `ลบกล้อง: ${nameOf(selected)}`);
     setSelected([]);
     setAskDelete(false);
-    showAlert('ลบกล้องแล้ว', `ลบ ${n} กล้องออกจากระบบแล้ว`);
+    notify(result, 'ลบกล้องแล้ว', `ลบ ${n} กล้องออกจากระบบแล้ว`);
   };
 
   const selectedNames = visibleCameras.filter((c) => selected.includes(c.id)).map((c) => c.name).join(', ');
@@ -51,7 +60,19 @@ export default function DevicesScreen({ navigation }) {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 220 }}>
         {/* ปุ่มเพิ่มกล้องใหม่ (UC-14) */}
-        <PrimaryButton label="เพิ่มกล้องใหม่" icon="add-circle" onPress={() => navigation.navigate('AddCamera')} style={{ marginBottom: 12 }} />
+        <PrimaryButton label={needsApproval ? 'ขอเพิ่มกล้องใหม่' : 'เพิ่มกล้องใหม่'} icon="add-circle" onPress={() => navigation.navigate('AddCamera')} style={{ marginBottom: 12 }} />
+
+        {/* เจ้าหน้าที่: แจ้งว่าต้องรออนุมัติ · ทุกคน: ทางลัดไปหน้าคำขอเมื่อมีคำขอค้าง */}
+        {(needsApproval || pendingCount > 0) && (
+          <Pressable style={styles.info} onPress={() => navigation.navigate('Requests')}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={colors.accent} />
+            <Text style={styles.infoText}>
+              {needsApproval ? 'การเปลี่ยนแปลงทุกอย่างจะส่งเป็นคำขอให้ Admin อนุมัติก่อน' : 'มีคำขอจากเจ้าหน้าที่รออนุมัติ'}
+              {pendingCount > 0 ? ` · รออนุมัติ ${pendingCount} รายการ` : ''}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textDim} />
+          </Pressable>
+        )}
 
         {needsUpdate.length > 0 && (
           <Pressable style={styles.banner} onPress={() => setSelected(needsUpdate.map((c) => c.id))}>
@@ -78,6 +99,9 @@ export default function DevicesScreen({ navigation }) {
                       <Text style={styles.name}>{c.name}</Text>
                       <Text style={styles.sub}>{c.model} · v{c.firmware}</Text>
                     </View>
+                    {pendingIds.includes(c.id) && !c.updating ? (
+                      <Text style={[styles.pill, { color: colors.accent, borderColor: colors.accent, marginRight: 6 }]}>รออนุมัติ</Text>
+                    ) : null}
                     {c.updating ? (
                       <View style={styles.status}><ActivityIndicator size="small" color={colors.accent} /><Text style={styles.statusText}> กำลังอัปเดต</Text></View>
                     ) : outdated ? (
@@ -98,7 +122,7 @@ export default function DevicesScreen({ navigation }) {
         <View style={styles.actionBar}>
           {moving ? (
             <>
-              <Text style={styles.actionTitle}>ย้าย {selected.length} กล้องไปที่</Text>
+              <Text style={styles.actionTitle}>{needsApproval ? 'ขอย้าย' : 'ย้าย'} {selected.length} กล้องไปที่</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
                 {visibleSites.map((s) => <Chip key={s.id} label={s.name} icon={s.icon} onPress={() => moveTo(s.id)} />)}
               </ScrollView>
@@ -108,10 +132,10 @@ export default function DevicesScreen({ navigation }) {
             <>
               <Text style={styles.actionTitle}>เลือกแล้ว {selected.length} กล้อง</Text>
               <View style={{ flexDirection: 'row', marginTop: 10 }}>
-                <PrimaryButton label="อัปเดตเฟิร์มแวร์" icon="cloud-download" onPress={updateFirmware} style={{ flex: 1, marginRight: 8 }} />
-                <PrimaryButton label="ย้ายสาขา" icon="swap-horizontal" secondary onPress={() => setMoving(true)} style={{ flex: 1 }} />
+                <PrimaryButton label={needsApproval ? 'ขออัปเดต' : 'อัปเดตเฟิร์มแวร์'} icon="cloud-download" onPress={updateFirmware} style={{ flex: 1, marginRight: 8 }} />
+                <PrimaryButton label={needsApproval ? 'ขอย้ายสาขา' : 'ย้ายสาขา'} icon="swap-horizontal" secondary onPress={() => setMoving(true)} style={{ flex: 1 }} />
               </View>
-              <PrimaryButton label={`ลบกล้องที่เลือก (${selected.length})`} icon="trash-outline" danger onPress={() => setAskDelete(true)} style={{ marginTop: 8 }} />
+              <PrimaryButton label={`${needsApproval ? 'ขอลบ' : 'ลบ'}กล้องที่เลือก (${selected.length})`} icon="trash-outline" danger onPress={() => setAskDelete(true)} style={{ marginTop: 8 }} />
               <Text style={styles.cancel} onPress={() => setSelected([])}>ยกเลิกการเลือก</Text>
             </>
           )}
@@ -119,8 +143,8 @@ export default function DevicesScreen({ navigation }) {
       )}
 
       {/* ยืนยันก่อนลบกล้อง */}
-      <ConfirmDialog visible={askDelete} danger icon="trash-outline" title={`ลบ ${selected.length} กล้อง`}
-        message={`${selectedNames}\nภาพสดและเหตุการณ์ของกล้องเหล่านี้จะถูกลบด้วย`} confirmText="ลบกล้อง"
+      <ConfirmDialog visible={askDelete} danger icon="trash-outline" title={`${needsApproval ? 'ขอลบ' : 'ลบ'} ${selected.length} กล้อง`}
+        message={`${selectedNames}\n${needsApproval ? 'คำขอจะส่งให้ Admin อนุมัติ เมื่ออนุมัติแล้ว' : ''}ภาพสดและเหตุการณ์ของกล้องเหล่านี้จะถูกลบด้วย`} confirmText={needsApproval ? 'ส่งคำขอ' : 'ลบกล้อง'}
         onCancel={() => setAskDelete(false)} onConfirm={deleteSelected} />
     </View>
   );
@@ -128,6 +152,8 @@ export default function DevicesScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
+  info: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.accentSoft, borderRadius: radius.md, padding: 12, marginBottom: 12 },
+  infoText: { color: colors.text, marginLeft: 10, flex: 1, fontSize: 13 },
   banner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF8EB', borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: '#FCE3B0' },
   bannerText: { color: '#B26B00', marginLeft: 10, flex: 1, fontSize: 13 },
   row: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, padding: 13, borderRadius: radius.md, marginBottom: 8, borderWidth: 1, borderColor: colors.border },

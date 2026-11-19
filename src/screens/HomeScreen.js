@@ -19,7 +19,7 @@ function greeting() {
 // หน้าแรก: ภาพรวมองค์กร เมนูลัด สาขา และเหตุการณ์ล่าสุด
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { currentUser, org, visibleSites, visibleCameras, visibleAlerts, canManageTeam, canManageDevices, getCamera, getSite, logout } = useApp();
+  const { currentUser, org, visibleSites, visibleCameras, visibleAlerts, canManageTeam, canManageDevices, isAdmin, pendingCount, getCamera, getSite, logout } = useApp();
   const [askLogout, setAskLogout] = useState(false);
 
   // แถบสถานะตัวอักษรสีขาวเฉพาะหน้านี้ (หัวสีฟ้า)
@@ -41,6 +41,8 @@ export default function HomeScreen({ navigation }) {
     canManageTeam && { icon: 'people', label: 'สมาชิก', onPress: () => navigation.navigate('Team') },
     canManageDevices && { icon: 'hardware-chip', label: 'อุปกรณ์', onPress: () => navigation.navigate('Devices') },
     canManageDevices && { icon: 'add-circle', label: 'เพิ่มกล้อง', onPress: () => navigation.navigate('AddCamera') },
+    // คำขอจัดการกล้อง: Admin = คำขอที่ต้องอนุมัติ · เจ้าหน้าที่ = คำขอของฉัน · ตัวเลขในวงเล็บ = จำนวนที่รออนุมัติ
+    canManageDevices && { icon: 'document-text', label: `${isAdmin ? 'อนุมัติ' : 'คำขอ'}${pendingCount ? ` (${pendingCount})` : ''}`, onPress: () => navigation.navigate('Requests') },
     { icon: 'person-circle', label: 'บัญชี', onPress: () => navigation.navigate('More') },
   ].filter(Boolean);
 
