@@ -28,7 +28,9 @@ export default function RequestsScreen({ route }) {
   // Manager กดอนุมัติ / ไม่อนุมัติ แล้วแจ้งผล
   const decide = (r, approve) => {
     decideRequest(r.id, approve);
-    showAlert(approve ? 'อนุมัติแล้ว' : 'ไม่อนุมัติคำขอ', approve ? `ดำเนินการแล้ว: ${r.summary}` : `แจ้งผลให้ ${r.byName} แล้ว`);
+    // คำขอเพิ่มกล้อง → แจ้งแค่ว่าอนุมัติแล้ว · คำขออื่น → แจ้งว่าดำเนินการแล้ว
+    const approvedMsg = r.action.type === 'add' ? `อนุมัติคำขอของ ${r.byName} แล้ว: ${r.summary}` : `ดำเนินการแล้ว: ${r.summary}`;
+    showAlert(approve ? 'อนุมัติแล้ว' : 'ไม่อนุมัติคำขอ', approve ? approvedMsg : `แจ้งผลให้ ${r.byName} แล้ว`);
   };
 
   return (
@@ -44,7 +46,7 @@ export default function RequestsScreen({ route }) {
         <View style={styles.waiting}>
           <View style={styles.waitIcon}><Ionicons name="hourglass" size={30} color="#fff" /></View>
           <Text style={styles.waitTitle}>{route.params?.justSent ? 'ส่งคำขอแล้ว · รออนุมัติ' : 'รออนุมัติจาก Manager'}</Text>
-          <Text style={styles.waitSub}>คำขอ {pendingCount} รายการกำลังรอ Manager ตรวจสอบ เมื่ออนุมัติแล้วการเปลี่ยนแปลงจะมีผลทันที</Text>
+          <Text style={styles.waitSub}>คำขอ {pendingCount} รายการกำลังรอ Manager ตรวจสอบ เมื่อ Manager ตรวจแล้ว สถานะจะเปลี่ยนเป็น "อนุมัติแล้ว" หรือ "ไม่อนุมัติ"</Text>
         </View>
       )}
 

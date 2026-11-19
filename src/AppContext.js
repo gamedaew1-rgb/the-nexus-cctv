@@ -140,7 +140,8 @@ export function AppProvider({ children }) {
   const decideRequest = (id, approve) => {
     const r = requests.find((x) => x.id === id);
     if (!isManager || !r || r.status !== 'pending') return;
-    if (approve) applyAction(r.action);
+    // คำขอเพิ่มกล้อง: อนุมัติแล้วแค่เปลี่ยนสถานะเป็น "อนุมัติแล้ว" ไม่เพิ่มกล้องเข้าระบบ · คำขออื่น (ลบ ย้าย อัปเดต) ทำตามคำขอจริง
+    if (approve && r.action.type !== 'add') applyAction(r.action);
     setRequests((list) => list.map((x) => (x.id === id ? { ...x, status: approve ? 'approved' : 'rejected', decidedBy: currentUser.name, decidedAt: nowText() } : x)));
   };
 
