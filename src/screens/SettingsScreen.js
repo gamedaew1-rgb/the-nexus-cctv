@@ -7,7 +7,7 @@ import { colors } from '../theme';
 
 // หน้าบัญชี: โปรไฟล์ สิทธิ์ของบทบาท พื้นที่คลาวด์ เมนูจัดการ
 export default function SettingsScreen({ navigation }) {
-  const { currentUser, org, canManageTeam, canManageDevices, isAdmin, needsApproval, pendingCount, visibleSites, visibleCameras, storage, logout } = useApp();
+  const { currentUser, org, canManageTeam, canManageDevices, isAdmin, needsApproval, pendingCount, visibleSites, visibleCameras, storage, logout, resetDemo } = useApp();
   // การตั้งค่าแอป (สวิตช์) ยังเป็นแบบจำลอง เก็บไว้เฉพาะในหน้านี้
   const [prefs, setPrefs] = useState({ push: true, sound: false, hd: false });
   const toggle = (k) => (v) => setPrefs((p) => ({ ...p, [k]: v }));
@@ -16,6 +16,7 @@ export default function SettingsScreen({ navigation }) {
   const role = ROLES[currentUser.role];
 
   const [askLogout, setAskLogout] = useState(false);
+  const [askReset, setAskReset] = useState(false);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
@@ -52,7 +53,9 @@ export default function SettingsScreen({ navigation }) {
             {canManageTeam && <ListRow icon="person-add" title="เพิ่มสมาชิก" subtitle="สร้างบัญชีล็อกอินให้คนในองค์กร" onPress={() => navigation.navigate('InviteMember')} />}
             {canManageTeam && <ListRow icon="people" title="สมาชิกและสาขา" subtitle="ดูและแก้ไขสิทธิ์" onPress={() => navigation.navigate('Team')} last={!canManageDevices} />}
             {canManageDevices && <ListRow icon="hardware-chip" title="จัดการอุปกรณ์" subtitle={needsApproval ? 'เพิ่ม ลบ ย้าย อัปเดต (ต้องรอ Admin อนุมัติ)' : 'เพิ่ม ลบ ย้ายสาขา อัปเดตเฟิร์มแวร์'} onPress={() => navigation.navigate('Devices')} />}
-            {canManageDevices && <ListRow icon="document-text" title={isAdmin ? 'อนุมัติคำขอจัดการกล้อง' : 'คำขอของฉัน'} subtitle={pendingCount ? `รออนุมัติ ${pendingCount} รายการ` : 'ไม่มีคำขอค้าง'} onPress={() => navigation.navigate('Requests')} last />}
+            {canManageDevices && <ListRow icon="document-text" title={isAdmin ? 'อนุมัติคำขอจัดการกล้อง' : 'คำขอของฉัน'} subtitle={pendingCount ? `รออนุมัติ ${pendingCount} รายการ` : 'ไม่มีคำขอค้าง'} onPress={() => navigation.navigate('Requests')} last={!isAdmin} />}
+            {/* Admin: รีเซ็ตข้อมูลกลับเป็นข้อมูลตัวอย่าง (เพราะตอนนี้ข้อมูลถูกบันทึกในเบราว์เซอร์ ไม่หายเมื่อรีเฟรช) */}
+            {isAdmin && <ListRow icon="refresh" title="รีเซ็ตข้อมูลตัวอย่าง" subtitle="คืนกล้อง สมาชิก เหตุการณ์ และล้างคำขอ" onPress={() => setAskReset(true)} last />}
           </Card>
         </>
       )}
@@ -78,7 +81,11 @@ export default function SettingsScreen({ navigation }) {
       <ConfirmDialog visible={askLogout} danger icon="log-out-outline" title="ออกจากระบบ"
         message={`ต้องการออกจากบัญชี ${currentUser.username} หรือไม่?`} confirmText="ออกจากระบบ"
         onCancel={() => setAskLogout(false)} onConfirm={() => { setAskLogout(false); logout(); }} />
-      <Text style={styles.version}>The Nexus CCTV 3.0 · ข้อมูลจำลอง</Text>
+      {/* ยืนยันก่อนรีเซ็ตข้อมูลตัวอย่าง */}
+      <ConfirmDialog visible={askReset} danger icon="refresh" title="รีเซ็ตข้อมูลตัวอย่าง"
+        message="กล้อง สมาชิก และเหตุการณ์จะกลับเป็นค่าเริ่มต้น คำขอทั้งหมดจะถูกล้าง" confirmText="รีเซ็ต"
+        onCancel={() => setAskReset(false)} onConfirm={() => { setAskReset(false); resetDemo(); }} />
+      <Text style={styles.version}>The Nexus CCTV 3.0 · ข้อมูลจำลอง (บันทึกในเบราว์เซอร์)</Text>
     </ScrollView>
   );
 }

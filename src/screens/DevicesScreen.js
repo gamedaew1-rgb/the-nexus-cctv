@@ -23,8 +23,9 @@ export default function DevicesScreen({ navigation }) {
   const nameOf = (ids) => visibleCameras.filter((c) => ids.includes(c.id)).map((c) => c.name).join(', ');
 
   // แจ้งผลหลังสั่งงาน: Admin = ทำแล้ว · เจ้าหน้าที่ = ส่งคำขอแล้ว รออนุมัติ
+  // เจ้าหน้าที่ → พาไปหน้า "รออนุมัติ" (หน้าคำขอ) เพื่อดูสถานะ
   const notify = (result, doneTitle, doneMsg) => {
-    if (result === 'requested') showAlert('ส่งคำขอแล้ว', 'รอ Admin อนุมัติ ดูสถานะได้ที่เมนู "คำขอของฉัน"');
+    if (result === 'requested') navigation.navigate('Requests', { justSent: true });
     else showAlert(doneTitle, doneMsg);
   };
 

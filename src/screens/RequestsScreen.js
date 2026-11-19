@@ -18,7 +18,7 @@ const STATUS = {
   rejected: { label: 'ไม่อนุมัติ', color: colors.live, bg: '#FFF1F1' },
 };
 
-export default function RequestsScreen() {
+export default function RequestsScreen({ route }) {
   const { isAdmin, visibleRequests, decideRequest } = useApp();
   // แท็บ: 'pending' = รออนุมัติ · 'done' = ตัดสินแล้ว (ประวัติ)
   const [tab, setTab] = useState('pending');
@@ -38,6 +38,15 @@ export default function RequestsScreen() {
           ? 'คำขอจัดการกล้องจากเจ้าหน้าที่องค์กร กดอนุมัติแล้วระบบจะทำตามคำขอทันที'
           : 'คำขอที่คุณส่งจะมีผลเมื่อ Admin อนุมัติแล้วเท่านั้น'}
       </Text>
+
+      {/* หน้ารออนุมัติ: เจ้าหน้าที่เพิ่งส่งคำขอ หรือยังมีคำขอค้าง → แสดงกล่องนาฬิกาทราย */}
+      {!isAdmin && pendingCount > 0 && (
+        <View style={styles.waiting}>
+          <View style={styles.waitIcon}><Ionicons name="hourglass" size={30} color="#fff" /></View>
+          <Text style={styles.waitTitle}>{route.params?.justSent ? 'ส่งคำขอแล้ว · รออนุมัติ' : 'รออนุมัติจาก Admin'}</Text>
+          <Text style={styles.waitSub}>คำขอ {pendingCount} รายการกำลังรอ Admin ตรวจสอบ เมื่ออนุมัติแล้วการเปลี่ยนแปลงจะมีผลทันที</Text>
+        </View>
+      )}
 
       <Segment
         options={[{ value: 'pending', label: `รออนุมัติ (${pendingCount})` }, { value: 'done', label: 'ประวัติ' }]}
@@ -80,6 +89,10 @@ export default function RequestsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
+  waiting: { alignItems: 'center', backgroundColor: colors.surface, borderRadius: radius.lg, padding: 20, marginBottom: 14, borderWidth: 1, borderColor: colors.border },
+  waitIcon: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.warning, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  waitTitle: { color: colors.text, fontSize: 18, fontWeight: '800' },
+  waitSub: { color: colors.textDim, fontSize: 13, textAlign: 'center', marginTop: 6 },
   intro: { color: colors.textDim, fontSize: 13, marginBottom: 12 },
   empty: { alignItems: 'center', marginTop: 48 },
   emptyText: { color: colors.textDim, marginTop: 8 },

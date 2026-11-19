@@ -84,6 +84,18 @@ export default function HomeScreen({ navigation }) {
       </Card>
 
       <View style={{ paddingHorizontal: 16 }}>
+        {/* กล่องแจ้งคำขอรออนุมัติ: Admin = มีคำขอต้องตัดสิน · เจ้าหน้าที่ = คำขอของตัวเองที่ยังรออยู่ · กดแล้วไปหน้าคำขอ */}
+        {canManageDevices && pendingCount > 0 && (
+          <Pressable style={styles.pending} onPress={() => navigation.navigate('Requests')}>
+            <View style={styles.pendingIcon}><Ionicons name="hourglass" size={20} color="#fff" /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.pendingTitle}>{isAdmin ? `มีคำขอรออนุมัติ ${pendingCount} รายการ` : `คำขอของคุณรออนุมัติ ${pendingCount} รายการ`}</Text>
+              <Text style={styles.pendingSub}>{isAdmin ? 'แตะเพื่อตรวจและอนุมัติคำขอจากเจ้าหน้าที่' : 'แตะเพื่อดูสถานะ'}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.accent} />
+          </Pressable>
+        )}
+
         {/* เมนูลัด */}
         <Card style={styles.actions}>
           {actions.map((a) => (
@@ -172,6 +184,10 @@ function Stat({ value, label, color }) {
 }
 
 const styles = StyleSheet.create({
+  pending: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accent, borderRadius: radius.md, padding: 12, marginBottom: 12 },
+  pendingIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  pendingTitle: { color: colors.text, fontWeight: '700', fontSize: 15 },
+  pendingSub: { color: colors.textDim, fontSize: 12, marginTop: 2 },
   container: { flex: 1, backgroundColor: colors.bg },
   hero: { backgroundColor: colors.accent, paddingHorizontal: 20, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: 'hidden' },
   bubble: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255,255,255,0.08)', top: -80, right: -70 },

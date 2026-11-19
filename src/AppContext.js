@@ -1,6 +1,21 @@
 // AppContext.js — "สมอง" ของแอป เก็บข้อมูลกลาง (ผู้ใช้ที่ล็อกอิน กล้อง สมาชิก เหตุการณ์) และกฎสิทธิ์ของแต่ละบทบาท ทุกหน้าเรียกใช้ผ่าน useApp()
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import * as mock from './data/mockData';
+
+// ----- การบันทึกข้อมูลในเบราว์เซอร์ (เฉพาะเว็บ) -----
+// localStorage = เก็บถาวรในเบราว์เซอร์ รีเฟรชแล้วไม่หาย และแชร์กันทุกแท็บ → staff ส่งคำขอในแท็บหนึ่ง admin เห็นในอีกแท็บ
+// sessionStorage = จำว่าใครล็อกอินอยู่ แยกกันแต่ละแท็บ (แท็บหนึ่งเป็น staff อีกแท็บเป็น admin ได้)
+// บนมือถือ (Expo Go) ไม่มีสองอย่างนี้ ข้อมูลจึงอยู่แค่ในหน่วยความจำเหมือนเดิม · ทุกจุดครอบ try/catch เผื่อเบราว์เซอร์ปิดการเก็บข้อมูล
+const DATA_KEY = 'nexus-cctv-data-v1';
+const USER_KEY = 'nexus-cctv-user';
+const isWeb = Platform.OS === 'web' && typeof window !== 'undefined';
+const readJSON = (store, key) => { try { return isWeb ? JSON.parse(window[store].getItem(key)) : null; } catch { return null; } };
+const writeJSON = (store, key, value) => { try { if (isWeb) window[store].setItem(key, JSON.stringify(value)); } catch {} };
+
+// โหลดข้อมูลที่บันทึกไว้ (ถ้ามี) · ล้างสถานะ "กำลังอัปเดต" ที่ค้างจากการรีเฟรชกลางคัน
+const saved = readJSON('localStorage', DATA_KEY);
+if (saved?.cameras) saved.cameras = saved.cameras.map((c) => (c.updating ? { ...c, updating: false, firmware: c.latestFirmware } : c));
 
 // state กลางของแอป — ภายหลังเปลี่ยนแต่ละฟังก์ชันเป็นการเรียก API ได้
 export const AppContext = createContext(null);
@@ -26,13 +41,31 @@ export const PERMISSIONS = [
 // AppProvider = ตัวเก็บ state กลาง ถูกครอบทั้งแอปใน App.js
 export function AppProvider({ children }) {
   // useState = ตัวแปรที่เปลี่ยนค่าแล้วหน้าจออัปเดตเอง · ค่าเริ่มต้นมาจาก mockData · currentUserId = null แปลว่ายังไม่ล็อกอิน
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(() => readJSON('sessionStorage', USER_KEY));
   const [sites] = useState(mock.sites);
-  const [cameras, setCameras] = useState(mock.cameras);
-  const [members, setMembers] = useState(mock.members);
-  const [alerts, setAlerts] = useState(mock.alerts);
+  const [cameras, setCameras] = useState(saved?.cameras ?? mock.cameras);
+  const [members, setMembers] = useState(saved?.members ?? mock.members);
+  const [alerts, setAlerts] = useState(saved?.alerts ?? mock.alerts);
   // คำขอจัดการกล้องจากเจ้าหน้าที่ (เริ่มต้นว่าง) · status: 'pending' รออนุมัติ / 'approved' อนุมัติแล้ว / 'rejected' ไม่อนุมัติ
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState(saved?.requests ?? []);
+
+  // บันทึกทุกครั้งที่ข้อมูลเปลี่ยน
+  useEffect(() => { writeJSON('localStorage', DATA_KEY, { cameras, members, alerts, requests }); }, [cameras, members, alerts, requests]);
+  useEffect(() => { writeJSON('sessionStorage', USER_KEY, currentUserId); }, [currentUserId]);
+
+  // ฟังว่าแท็บอื่นแก้ข้อมูลหรือไม่ (เช่น staff ส่งคำขอ) แล้วอัปเดตหน้าจอแท็บนี้ทันทีโดยไม่ต้องรีเฟรช
+  useEffect(() => {
+    if (!isWeb) return undefined;
+    const onStorage = (e) => {
+      if (e.key !== DATA_KEY || !e.newValue) return;
+      try {
+        const d = JSON.parse(e.newValue);
+        setCameras(d.cameras); setMembers(d.members); setAlerts(d.alerts); setRequests(d.requests);
+      } catch {}
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // หาผู้ใช้ที่ล็อกอินอยู่ แล้วคำนวณสิทธิ์จากบทบาท (role)
   const currentUser = members.find((m) => m.id === currentUserId) ?? null;
@@ -146,6 +179,8 @@ export function AppProvider({ children }) {
     login,
     // ออกจากระบบ = ล้างผู้ใช้ปัจจุบัน แล้ว RootNavigator จะพากลับหน้า Login เอง
     logout: () => setCurrentUserId(null),
+    // รีเซ็ตข้อมูลทั้งหมดกลับเป็นข้อมูลตัวอย่าง (ใช้ก่อนนำเสนอ) · ผู้ใช้ปัจจุบันยังล็อกอินอยู่
+    resetDemo: () => { setCameras(mock.cameras); setMembers(mock.members); setAlerts(mock.alerts); setRequests([]); },
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

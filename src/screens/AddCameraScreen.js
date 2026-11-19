@@ -53,9 +53,10 @@ export default function AddCameraScreen({ navigation, route }) {
     };
     // Admin → เพิ่มทันที · เจ้าหน้าที่ → ส่งคำขอ
     const result = manageCameras({ type: 'add', camera }, `เพิ่มกล้อง: ${camera.name} · ${getSite(siteId).name} (${model})`);
-    if (result === 'requested') showAlert('ส่งคำขอแล้ว', 'รอ Admin อนุมัติ เมื่ออนุมัติแล้วกล้องจะขึ้นในรายการ');
-    else showAlert('เพิ่มกล้องแล้ว', `${camera.name} · ${getSite(siteId).name}`);
+    // เจ้าหน้าที่ → ปิดหน้านี้แล้วพาไปหน้า "รออนุมัติ" · Admin → แจ้งว่าเพิ่มแล้วและกลับหน้าเดิม
     navigation.goBack();
+    if (result === 'requested') navigation.navigate('Requests', { justSent: true });
+    else showAlert('เพิ่มกล้องแล้ว', `${camera.name} · ${getSite(siteId).name}`);
   };
 
   return (
