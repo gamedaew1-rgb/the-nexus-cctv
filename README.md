@@ -32,7 +32,7 @@ npx expo start -c
 |---|---|
 | Navigation (แท็บ + สแตก) | `App.js` |
 | State กลาง / สิทธิ์ / บทบาท | `src/AppContext.js` |
-| ข้อมูลจำลอง (สาขา กล้อง สมาชิก คลิป เหตุการณ์) | `src/data/mockData.js` |
+| ข้อมูลจำลอง (สาขา กล้อง ผู้ใช้ คลิป เหตุการณ์) | `src/data/mockData.js` |
 | สี | `src/theme.js` |
 | คอมโพเนนต์ร่วม | `src/components/ui.js`, `src/components/CameraTile.js` |
 
@@ -46,9 +46,9 @@ npx expo start -c
 | ตั้งค่าการแจ้งเตือน (ช่วงเวลา ความไว โซนตรวจจับ) | `AlarmSettingsScreen.js` |
 | ดูย้อนหลัง + ไทม์ไลน์ 24 ชม. | `PlaybackScreen.js` |
 | เหตุการณ์ | `AlertsScreen.js` |
-| ทีม: สมาชิก / สาขา | `TeamScreen.js` |
-| แก้สิทธิ์สมาชิก | `MemberDetailScreen.js` |
-| เพิ่มสมาชิก (สร้างบัญชีล็อกอิน) | `InviteMemberScreen.js` |
+| ทีม: ผู้ใช้ / สาขา | `TeamScreen.js` |
+| แก้สิทธิ์ผู้ใช้ | `MemberDetailScreen.js` |
+| เพิ่มผู้ใช้ (สร้างบัญชีล็อกอิน) | `InviteMemberScreen.js` |
 | จัดการอุปกรณ์ (อัปเดตเฟิร์มแวร์ / ย้ายสาขา / ลบกล้องทีละหลายตัว) | `DevicesScreen.js` |
 | เพิ่มกล้องใหม่ (Manager) | `AddCameraScreen.js` |
 | บัญชี: โปรไฟล์ สิทธิ์ พื้นที่คลาวด์ | `SettingsScreen.js` |
