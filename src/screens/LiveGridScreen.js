@@ -6,14 +6,14 @@ import CameraTile from '../components/CameraTile';
 import { Chip } from '../components/ui';
 import { colors, radius } from '../theme';
 
-// รูปแบบกริด: value = จำนวนคอลัมน์ (1, 2, 3) · label = จำนวนช่องบนปุ่ม (1, 4, 9) · icon = ไอคอนรูปกริดที่แสดงคู่กับตัวเลข
+// รูปแบบกริด: value = จำนวนคอลัมน์ (กล้องต่อแถว) 1, 2, 3 · ตัวเลขบนปุ่มตรงกับ value · icon = ไอคอนรูปกริดที่แสดงคู่กับตัวเลข
 const LAYOUTS = [
-  { value: 1, label: '1', icon: 'square' },
-  { value: 2, label: '4', icon: 'grid' },
-  { value: 3, label: '9', icon: 'apps' },
+  { value: 1, icon: 'square' },
+  { value: 2, icon: 'grid' },
+  { value: 3, icon: 'apps' },
 ];
 
-// ปุ่มเลือกมุมมองกริด: ไอคอน + "x ช่อง" · ปุ่มที่เลือกอยู่เป็นพื้นฟ้าตัวอักษรขาว ส่วนปุ่มอื่นเป็นพื้นขาวมีขอบ
+// ปุ่มเลือกมุมมองกริด: ไอคอน + ตัวเลข 1 / 2 / 3 (จำนวนกล้องต่อแถว) · ปุ่มที่เลือกอยู่เป็นพื้นฟ้าตัวอักษรขาว ส่วนปุ่มอื่นเป็นพื้นขาวมีขอบ
 function LayoutPicker({ value, onChange }) {
   return (
     <View style={styles.picker}>
@@ -21,10 +21,10 @@ function LayoutPicker({ value, onChange }) {
         const active = value === o.value;
         return (
           <Pressable key={o.value} onPress={() => onChange(o.value)}
-            accessibilityRole="button" accessibilityLabel={`แสดง ${o.label} ช่อง`} accessibilityState={{ selected: active }}
+            accessibilityRole="button" accessibilityLabel={`แสดง ${o.value} กล้องต่อแถว`} accessibilityState={{ selected: active }}
             style={({ pressed }) => [styles.pickBtn, active && styles.pickActive, pressed && !active && { backgroundColor: colors.surfaceAlt }]}>
             <Ionicons name={active ? o.icon : `${o.icon}-outline`} size={14} color={active ? '#fff' : colors.textDim} />
-            <Text style={[styles.pickText, active && { color: '#fff' }]}>{o.label} ช่อง</Text>
+            <Text style={[styles.pickText, active && { color: '#fff' }]}>{o.value}</Text>
           </Pressable>
         );
       })}
