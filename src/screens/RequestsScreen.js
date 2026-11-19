@@ -6,7 +6,6 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../AppContext';
 import { PrimaryButton, Segment } from '../components/ui';
-import { showAlert } from '../utils/dialog';
 import { colors, radius } from '../theme';
 
 // ไอคอนของคำขอแต่ละประเภท
@@ -18,7 +17,7 @@ const STATUS = {
   rejected: { label: 'ไม่อนุมัติ', color: colors.live, bg: '#FFF1F1' },
 };
 
-export default function RequestsScreen({ route }) {
+export default function RequestsScreen({ navigation, route }) {
   const { isManager, visibleRequests, decideRequest } = useApp();
   // แท็บ: 'pending' = รออนุมัติ · 'done' = ตัดสินแล้ว (ประวัติ)
   const [tab, setTab] = useState('pending');
@@ -28,9 +27,19 @@ export default function RequestsScreen({ route }) {
   // Manager กดอนุมัติ / ไม่อนุมัติ แล้วแจ้งผล
   const decide = (r, approve) => {
     decideRequest(r.id, approve);
-    // คำขอเพิ่มกล้อง → แจ้งแค่ว่าอนุมัติแล้ว · คำขออื่น → แจ้งว่าดำเนินการแล้ว
-    const approvedMsg = r.action.type === 'add' ? `อนุมัติคำขอของ ${r.byName} แล้ว: ${r.summary}` : `ดำเนินการแล้ว: ${r.summary}`;
-    showAlert(approve ? 'อนุมัติแล้ว' : 'ไม่อนุมัติคำขอ', approve ? approvedMsg : `แจ้งผลให้ ${r.byName} แล้ว`);
+    // ไปหน้าแสดงผล (ResultScreen): อนุมัติ = เครื่องหมายถูกสีเขียว · ไม่อนุมัติ = กากบาทสีแดง
+    // คำขอเพิ่มกล้องแค่เปลี่ยนสถานะ · คำขออื่น (ลบ ย้าย อัปเดต) ระบบทำตามคำขอแล้ว
+    navigation.navigate('Result', {
+      type: approve ? 'approved' : 'rejected',
+      title: approve ? 'อนุมัติคำขอเรียบร้อย' : 'ไม่อนุมัติคำขอ',
+      message: approve
+        ? (r.action.type === 'add' ? 'สถานะคำขอเปลี่ยนเป็น "อนุมัติแล้ว"' : 'ระบบดำเนินการตามคำขอแล้ว')
+        : `คำขอนี้ไม่มีผลกับกล้อง ${r.byName} จะเห็นสถานะ "ไม่อนุมัติ"`,
+      items: [r.summary],
+      by: r.byName,
+      time: r.time,
+      back: 'กลับหน้าคำขอ',
+    });
   };
 
   return (

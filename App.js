@@ -22,6 +22,7 @@ import InviteMemberScreen from './src/screens/InviteMemberScreen';
 import DevicesScreen from './src/screens/DevicesScreen';
 import AddCameraScreen from './src/screens/AddCameraScreen';
 import RequestsScreen from './src/screens/RequestsScreen';
+import ResultScreen from './src/screens/ResultScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 // Stack = เปิดหน้าซ้อนกันและมีปุ่มย้อนกลับ · Tab = แถบเมนูด้านล่าง
@@ -92,6 +93,8 @@ function RootNavigator() {
           <Stack.Screen name="Devices" component={DevicesScreen} options={{ title: 'จัดการอุปกรณ์' }} />
           <Stack.Screen name="AddCamera" component={AddCameraScreen} options={{ title: 'เพิ่มกล้อง', presentation: 'modal' }} />
           <Stack.Screen name="Requests" component={RequestsScreen} options={{ title: 'คำขอจัดการกล้อง' }} />
+          {/* หน้าแสดงผลหลังอนุมัติ / ไม่อนุมัติ / ลบกล้อง */}
+          <Stack.Screen name="Result" component={ResultScreen} options={{ title: 'ผลการดำเนินการ' }} />
         </>
       )}
     </Stack.Navigator>

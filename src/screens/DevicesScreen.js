@@ -49,10 +49,20 @@ export default function DevicesScreen({ navigation }) {
   // ลบกล้องที่เลือก (UC-15): ลบกล้องและเหตุการณ์ของกล้องนั้นออกจากระบบ
   const deleteSelected = () => {
     const n = selected.length;
+    // เก็บชื่อกล้อง (พร้อมสาขา) ไว้ก่อนลบ เพื่อแสดงในหน้าผลลัพธ์
+    const names = visibleCameras.filter((c) => selected.includes(c.id)).map((c) => `${c.name} · ${getSite(c.siteId).name}`);
     const result = manageCameras({ type: 'remove', ids: selected }, `ลบกล้อง: ${nameOf(selected)}`);
     setSelected([]);
     setAskDelete(false);
-    notify(result, 'ลบกล้องแล้ว', `ลบ ${n} กล้องออกจากระบบแล้ว`);
+    // Operator → หน้ารออนุมัติ · Manager → หน้าแสดงผล "ลบกล้องแล้ว"
+    if (result === 'requested') notify(result);
+    else navigation.navigate('Result', {
+      type: 'deleted',
+      title: `ลบกล้องแล้ว ${n} ตัว`,
+      message: 'กล้องและเหตุการณ์แจ้งเตือนของกล้องเหล่านี้ถูกลบออกจากระบบแล้ว',
+      items: names,
+      back: 'กลับหน้าจัดการอุปกรณ์',
+    });
   };
 
   const selectedNames = visibleCameras.filter((c) => selected.includes(c.id)).map((c) => c.name).join(', ');
