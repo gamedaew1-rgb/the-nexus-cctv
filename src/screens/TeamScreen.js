@@ -5,7 +5,7 @@ import { useApp, ROLES } from '../AppContext';
 import { Avatar, Card, Chip, RoleBadge, Segment } from '../components/ui';
 import { colors, radius, shadow } from '../theme';
 
-// สมาชิก (กรองตามบทบาท) และภาพรวมสาขา — Admin และเจ้าหน้าที่องค์กรเข้าได้
+// ผู้ใช้ (กรองตามบทบาท) และภาพรวมสาขา — เฉพาะ Manager
 export default function TeamScreen({ navigation }) {
   const { members, sites, cameras, currentUser, canEditMember } = useApp();
   const [tab, setTab] = useState('members');
@@ -16,7 +16,7 @@ export default function TeamScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 110 }}>
-        {/* การ์ดนับจำนวนสมาชิกแต่ละบทบาท */}
+        {/* การ์ดนับจำนวนผู้ใช้แต่ละบทบาท */}
         <View style={styles.stats}>
           {Object.keys(ROLES).map((r) => (
             <View key={r} style={styles.stat}>
@@ -27,7 +27,7 @@ export default function TeamScreen({ navigation }) {
           ))}
         </View>
 
-        <Segment options={[{ value: 'members', label: `สมาชิก (${members.length})` }, { value: 'sites', label: `สาขา (${sites.length})` }]} value={tab} onChange={setTab} />
+        <Segment options={[{ value: 'members', label: `ผู้ใช้ (${members.length})` }, { value: 'sites', label: `สาขา (${sites.length})` }]} value={tab} onChange={setTab} />
 
         {tab === 'members' ? (
           <>
@@ -43,7 +43,7 @@ export default function TeamScreen({ navigation }) {
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={styles.name}>{m.name}{m.id === currentUser.id ? '  (คุณ)' : ''}</Text>
                     <Text style={styles.sub} numberOfLines={1}>
-                      @{m.username} · {m.role === 'admin' ? 'ทุกสาขา' : m.siteIds.map((id) => sites.find((s) => s.id === id)?.name).join(', ') || 'ยังไม่มีสาขา'}
+                      @{m.username} · {m.role === 'manager' ? 'ทุกสาขา' : m.siteIds.map((id) => sites.find((s) => s.id === id)?.name).join(', ') || 'ยังไม่มีสาขา'}
                     </Text>
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
@@ -61,7 +61,7 @@ export default function TeamScreen({ navigation }) {
             {sites.map((s) => {
               const cams = cameras.filter((c) => c.siteId === s.id);
               const online = cams.filter((c) => c.online).length;
-              const people = members.filter((m) => m.role === 'admin' || m.siteIds.includes(s.id)).length;
+              const people = members.filter((m) => m.role === 'manager' || m.siteIds.includes(s.id)).length;
               return (
                 <Card key={s.id} style={styles.siteCard}>
                   <View style={styles.siteIcon}><Ionicons name={s.icon} size={22} color={colors.accent} /></View>
@@ -80,11 +80,11 @@ export default function TeamScreen({ navigation }) {
         )}
       </ScrollView>
 
-      {/* ปุ่มลอย "เพิ่มสมาชิก" มุมขวาล่าง */}
+      {/* ปุ่มลอย "เพิ่มผู้ใช้" มุมขวาล่าง */}
       {tab === 'members' && (
         <Pressable style={styles.fab} onPress={() => navigation.navigate('InviteMember')}>
           <Ionicons name="person-add" size={20} color="#fff" />
-          <Text style={styles.fabText}>เพิ่มสมาชิก</Text>
+          <Text style={styles.fabText}>เพิ่มผู้ใช้</Text>
         </Pressable>
       )}
     </View>

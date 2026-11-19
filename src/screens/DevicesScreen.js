@@ -7,7 +7,7 @@ import { showAlert } from '../utils/dialog';
 import { colors, radius } from '../theme';
 
 // จัดการอุปกรณ์: เพิ่มกล้อง · เลือกหลายตัว → อัปเดตเฟิร์มแวร์ / ย้ายสาขา / ลบ พร้อมกัน
-// Admin ทำได้ทันที · เจ้าหน้าที่องค์กรกดแล้วจะกลายเป็น "คำขอ" ส่งให้ Admin อนุมัติก่อน (UC-16)
+// Manager ทำได้ทันที · Operator กดแล้วจะกลายเป็น "คำขอ" ส่งให้ Manager อนุมัติก่อน (UC-16)
 export default function DevicesScreen({ navigation }) {
   const { visibleCameras, visibleSites, getSite, manageCameras, needsApproval, visibleRequests, pendingCount } = useApp();
   const [selected, setSelected] = useState([]);
@@ -22,8 +22,8 @@ export default function DevicesScreen({ navigation }) {
   const pendingIds = visibleRequests.filter((r) => r.status === 'pending').flatMap((r) => r.action.ids ?? []);
   const nameOf = (ids) => visibleCameras.filter((c) => ids.includes(c.id)).map((c) => c.name).join(', ');
 
-  // แจ้งผลหลังสั่งงาน: Admin = ทำแล้ว · เจ้าหน้าที่ = ส่งคำขอแล้ว รออนุมัติ
-  // เจ้าหน้าที่ → พาไปหน้า "รออนุมัติ" (หน้าคำขอ) เพื่อดูสถานะ
+  // แจ้งผลหลังสั่งงาน: Manager = ทำแล้ว · Operator = ส่งคำขอแล้ว รออนุมัติ
+  // Operator → พาไปหน้า "รออนุมัติ" (หน้าคำขอ) เพื่อดูสถานะ
   const notify = (result, doneTitle, doneMsg) => {
     if (result === 'requested') navigation.navigate('Requests', { justSent: true });
     else showAlert(doneTitle, doneMsg);
@@ -63,12 +63,12 @@ export default function DevicesScreen({ navigation }) {
         {/* ปุ่มเพิ่มกล้องใหม่ (UC-14) */}
         <PrimaryButton label={needsApproval ? 'ขอเพิ่มกล้องใหม่' : 'เพิ่มกล้องใหม่'} icon="add-circle" onPress={() => navigation.navigate('AddCamera')} style={{ marginBottom: 12 }} />
 
-        {/* เจ้าหน้าที่: แจ้งว่าต้องรออนุมัติ · ทุกคน: ทางลัดไปหน้าคำขอเมื่อมีคำขอค้าง */}
+        {/* Operator: แจ้งว่าต้องรออนุมัติ · ทุกคน: ทางลัดไปหน้าคำขอเมื่อมีคำขอค้าง */}
         {(needsApproval || pendingCount > 0) && (
           <Pressable style={styles.info} onPress={() => navigation.navigate('Requests')}>
             <Ionicons name="shield-checkmark-outline" size={20} color={colors.accent} />
             <Text style={styles.infoText}>
-              {needsApproval ? 'การเปลี่ยนแปลงทุกอย่างจะส่งเป็นคำขอให้ Admin อนุมัติก่อน' : 'มีคำขอจากเจ้าหน้าที่รออนุมัติ'}
+              {needsApproval ? 'การเปลี่ยนแปลงทุกอย่างจะส่งเป็นคำขอให้ Manager อนุมัติก่อน' : 'มีคำขอจาก Operator รออนุมัติ'}
               {pendingCount > 0 ? ` · รออนุมัติ ${pendingCount} รายการ` : ''}
             </Text>
             <Ionicons name="chevron-forward" size={18} color={colors.textDim} />
@@ -145,7 +145,7 @@ export default function DevicesScreen({ navigation }) {
 
       {/* ยืนยันก่อนลบกล้อง */}
       <ConfirmDialog visible={askDelete} danger icon="trash-outline" title={`${needsApproval ? 'ขอลบ' : 'ลบ'} ${selected.length} กล้อง`}
-        message={`${selectedNames}\n${needsApproval ? 'คำขอจะส่งให้ Admin อนุมัติ เมื่ออนุมัติแล้ว' : ''}ภาพสดและเหตุการณ์ของกล้องเหล่านี้จะถูกลบด้วย`} confirmText={needsApproval ? 'ส่งคำขอ' : 'ลบกล้อง'}
+        message={`${selectedNames}\n${needsApproval ? 'คำขอจะส่งให้ Manager อนุมัติ เมื่ออนุมัติแล้ว' : ''}ภาพสดและเหตุการณ์ของกล้องเหล่านี้จะถูกลบด้วย`} confirmText={needsApproval ? 'ส่งคำขอ' : 'ลบกล้อง'}
         onCancel={() => setAskDelete(false)} onConfirm={deleteSelected} />
     </View>
   );

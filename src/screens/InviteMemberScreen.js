@@ -16,27 +16,27 @@ function Field({ icon, ...props }) {
   );
 }
 
-// เพิ่มสมาชิก: สร้างบัญชีล็อกอินใหม่ (ล็อกอินได้ทันทีในแอป)
-// Admin เลือกได้ทุกบทบาท · เจ้าหน้าที่องค์กรเพิ่มได้เฉพาะ "สมาชิก"
+// เพิ่มผู้ใช้: สร้างบัญชีล็อกอินใหม่ (ล็อกอินได้ทันทีในแอป)
+// เฉพาะ Manager · เลือกบทบาทได้ทั้ง Manager และ Operator
 export default function InviteMemberScreen({ navigation }) {
   const { sites, addMember, assignableRoles, usernameTaken } = useApp();
   const [form, setForm] = useState({ name: '', contact: '', username: '', password: '' });
-  // บทบาทเริ่มต้น = สมาชิก · ตัวเลือกบทบาทมาจาก assignableRoles ตามสิทธิ์ของผู้ใช้
-  const [role, setRole] = useState(assignableRoles.includes('member') ? 'member' : assignableRoles[0]);
+  // บทบาทเริ่มต้น = Operator · ตัวเลือกบทบาทมาจาก assignableRoles ตามสิทธิ์ของผู้ใช้
+  const [role, setRole] = useState(assignableRoles.includes('operator') ? 'operator' : assignableRoles[0]);
   const [siteIds, setSiteIds] = useState([]);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
   const toggle = (id, on) => setSiteIds((l) => (on ? [...l, id] : l.filter((x) => x !== id)));
 
-  // ตรวจข้อมูลก่อนสร้างบัญชี (UC-08): กรอกครบ, ชื่อผู้ใช้ไม่มีช่องว่างและไม่ซ้ำ, รหัสผ่านอย่างน้อย 4 ตัว, เลือกสาขาอย่างน้อย 1 แห่ง (ยกเว้น Admin)
+  // ตรวจข้อมูลก่อนสร้างบัญชี (UC-08): กรอกครบ, ชื่อผู้ใช้ไม่มีช่องว่างและไม่ซ้ำ, รหัสผ่านอย่างน้อย 4 ตัว, เลือกสาขาอย่างน้อย 1 แห่ง (ยกเว้น Manager)
   const submit = () => {
     const { name, contact, username, password } = form;
     if (!name.trim() || !username.trim() || !password) return showAlert('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อ ชื่อผู้ใช้ และรหัสผ่าน');
     if (/\s/.test(username.trim())) return showAlert('ชื่อผู้ใช้ไม่ถูกต้อง', 'ชื่อผู้ใช้ห้ามมีช่องว่าง');
     if (usernameTaken(username)) return showAlert('ชื่อผู้ใช้ซ้ำ', `"${username.trim()}" ถูกใช้แล้ว`);
     if (password.length < 4) return showAlert('รหัสผ่านสั้นเกินไป', 'อย่างน้อย 4 ตัวอักษร');
-    if (role !== 'admin' && siteIds.length === 0) return showAlert('ยังไม่ได้เลือกสาขา', 'เลือกอย่างน้อย 1 สาขา');
-    addMember({ name: name.trim(), contact: contact.trim() || '-', username: username.trim(), password, role, siteIds: role === 'admin' ? sites.map((s) => s.id) : siteIds });
-    showAlert('เพิ่มสมาชิกแล้ว', `ล็อกอินด้วย\nชื่อผู้ใช้: ${username.trim()}\nรหัสผ่าน: ${password}`);
+    if (role !== 'manager' && siteIds.length === 0) return showAlert('ยังไม่ได้เลือกสาขา', 'เลือกอย่างน้อย 1 สาขา');
+    addMember({ name: name.trim(), contact: contact.trim() || '-', username: username.trim(), password, role, siteIds: role === 'manager' ? sites.map((s) => s.id) : siteIds });
+    showAlert('เพิ่มผู้ใช้แล้ว', `ล็อกอินด้วย\nชื่อผู้ใช้: ${username.trim()}\nรหัสผ่าน: ${password}`);
     navigation.goBack();
   };
 
@@ -58,7 +58,7 @@ export default function InviteMemberScreen({ navigation }) {
       )}
       <Text style={styles.note}>{ROLES[role].desc}</Text>
 
-      {role !== 'admin' && (
+      {role !== 'manager' && (
         <>
           <SectionTitle>สาขาที่เข้าถึงได้</SectionTitle>
           <Card>

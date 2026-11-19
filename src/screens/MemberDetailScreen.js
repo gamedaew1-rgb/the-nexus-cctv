@@ -5,17 +5,17 @@ import { useApp, ROLES } from '../AppContext';
 import { Avatar, Card, ConfirmDialog, ListRow, PrimaryButton, RoleBadge, SectionTitle, Segment } from '../components/ui';
 import { colors, radius } from '../theme';
 
-// ดู/แก้บทบาทและสาขาของสมาชิก — สิทธิ์แก้ขึ้นกับบทบาทของผู้ใช้ปัจจุบัน
+// ดู/แก้บทบาทและสาขาของผู้ใช้ — สิทธิ์แก้ขึ้นกับบทบาทของผู้ใช้ปัจจุบัน
 export default function MemberDetailScreen({ route, navigation }) {
   const { members, sites, updateMember, removeMember, currentUser, canEditMember, assignableRoles } = useApp();
   const [askRemove, setAskRemove] = useState(false);
   const member = members.find((m) => m.id === route.params.memberId);
   if (!member) return null;
 
-  // editable = มีสิทธิ์แก้บัญชีนี้หรือไม่ (กฎอยู่ใน canEditMember ของ AppContext) · Admin เข้าถึงทุกสาขาอัตโนมัติ
+  // editable = มีสิทธิ์แก้บัญชีนี้หรือไม่ (กฎอยู่ใน canEditMember ของ AppContext) · Manager เข้าถึงทุกสาขาอัตโนมัติ
   const editable = canEditMember(member);
   const isSelf = member.id === currentUser.id;
-  const allSites = member.role === 'admin';
+  const allSites = member.role === 'manager';
 
   // เปิด/ปิดสิทธิ์เข้าถึงสาขา (UC-10)
   const toggleSite = (siteId, on) =>
@@ -35,13 +35,13 @@ export default function MemberDetailScreen({ route, navigation }) {
         <View style={styles.notice}>
           <Ionicons name="lock-closed" size={16} color={colors.textDim} />
           <Text style={styles.noticeText}>
-            {isSelf ? 'ไม่สามารถแก้ไขสิทธิ์ของตัวเองได้' : 'คุณไม่มีสิทธิ์แก้ไขบัญชีนี้ (เจ้าหน้าที่องค์กรแก้ไขได้เฉพาะสมาชิก)'}
+            {isSelf ? 'ไม่สามารถแก้ไขสิทธิ์ของตัวเองได้' : 'คุณไม่มีสิทธิ์แก้ไขบัญชีนี้ (เฉพาะ Manager)'}
           </Text>
         </View>
       )}
 
       <SectionTitle>บทบาท</SectionTitle>
-      {/* เปลี่ยนบทบาทได้เฉพาะ Admin (เจ้าหน้าที่กำหนดได้แค่ "สมาชิก" จึงแสดงเป็นข้อความเฉยๆ) */}
+      {/* เปลี่ยนบทบาทได้เฉพาะ Manager · ถ้าไม่มีสิทธิ์จะแสดงเป็นข้อความเฉยๆ */}
       {editable && assignableRoles.length > 1 ? (
         <Segment options={assignableRoles.map((r) => ({ value: r, label: ROLES[r].label }))}
           value={member.role} onChange={(role) => updateMember(member.id, { role })} />
@@ -58,7 +58,7 @@ export default function MemberDetailScreen({ route, navigation }) {
               onValueChange={(v) => toggleSite(s.id, v)} trackColor={{ true: colors.accent }} />} />
         ))}
       </Card>
-      {allSites && <Text style={styles.note}>Admin เข้าถึงได้ทุกสาขาโดยอัตโนมัติ</Text>}
+      {allSites && <Text style={styles.note}>Manager เข้าถึงได้ทุกสาขาโดยอัตโนมัติ</Text>}
 
       {editable && <PrimaryButton label="ลบบัญชีนี้" icon="trash-outline" danger onPress={() => setAskRemove(true)} style={{ marginTop: 28 }} />}
       {/* ยืนยันก่อนลบบัญชี (UC-11) */}

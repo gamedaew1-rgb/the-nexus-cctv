@@ -24,13 +24,13 @@ export const cameras = [
   { id: 'cam8', siteId: 's3', name: 'ชั้นวางสินค้า A', model: 'CH-Mini', firmware: '1.2.0', latestFirmware: '1.2.0', online: true, streamUrl: BASE + 'ElephantsDream.mp4', alarm: alarm({ schedule: 'night' }) },
 ];
 
-// บัญชีล็อกอิน (ทดสอบ) — admin/admin123 · staff/staff123 · member/member123
+// บัญชีล็อกอิน (ทดสอบ) — manager/manager123 · operator/operator123 · บัญชีอื่นรหัส 1234
 export const members = [
-  { id: 'm1', username: 'admin', password: 'admin123', name: 'สมชาย ผู้ดูแล', contact: 'admin@nexuscctv.test', role: 'admin', siteIds: ['s1', 's2', 's3'] },
-  { id: 'm2', username: 'staff', password: 'staff123', name: 'วิภา ใจดี', contact: 'wipa@nexuscctv.test', role: 'staff', siteIds: ['s1', 's2', 's3'] },
-  { id: 'm3', username: 'member', password: 'member123', name: 'ธนา มั่นคง', contact: 'thana@nexuscctv.test', role: 'member', siteIds: ['s2'] },
-  { id: 'm4', username: 'anucha', password: '1234', name: 'อนุชา ศรีสุข', contact: '081-234-5678', role: 'member', siteIds: ['s1', 's2'] },
-  { id: 'm5', username: 'malee', password: '1234', name: 'มาลี รักงาน', contact: '089-876-5432', role: 'member', siteIds: ['s3'] },
+  { id: 'm1', username: 'manager', password: 'manager123', name: 'สมชาย ผู้ดูแล', contact: 'manager@nexuscctv.test', role: 'manager', siteIds: ['s1', 's2', 's3'] },
+  { id: 'm2', username: 'operator', password: 'operator123', name: 'วิภา ใจดี', contact: 'wipa@nexuscctv.test', role: 'operator', siteIds: ['s1', 's2'] },
+  { id: 'm3', username: 'thana', password: '1234', name: 'ธนา มั่นคง', contact: 'thana@nexuscctv.test', role: 'operator', siteIds: ['s2'] },
+  { id: 'm4', username: 'anucha', password: '1234', name: 'อนุชา ศรีสุข', contact: '081-234-5678', role: 'operator', siteIds: ['s1', 's2'] },
+  { id: 'm5', username: 'malee', password: '1234', name: 'มาลี รักงาน', contact: '089-876-5432', role: 'operator', siteIds: ['s3'] },
 ];
 
 // คลิปย้อนหลัง: start/end ใช้วางแถบบนไทม์ไลน์ · type 'motion' = บันทึกจากเหตุการณ์ (สีส้ม) · 'continuous' = บันทึกต่อเนื่อง (สีฟ้า)

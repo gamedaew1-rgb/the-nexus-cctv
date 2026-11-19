@@ -1,6 +1,6 @@
 // RequestsScreen.js — หน้าคำขอจัดการกล้อง
-// เจ้าหน้าที่องค์กร: ดูคำขอที่ตัวเองส่ง และสถานะ (รออนุมัติ / อนุมัติแล้ว / ไม่อนุมัติ) (UC-16)
-// Admin: เห็นคำขอทั้งหมด กดอนุมัติ (ระบบทำตามคำขอทันที) หรือไม่อนุมัติ (UC-17)
+// Operator: ดูคำขอที่ตัวเองส่ง และสถานะ (รออนุมัติ / อนุมัติแล้ว / ไม่อนุมัติ) (UC-16)
+// Manager: เห็นคำขอทั้งหมด กดอนุมัติ (ระบบทำตามคำขอทันที) หรือไม่อนุมัติ (UC-17)
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,13 +19,13 @@ const STATUS = {
 };
 
 export default function RequestsScreen({ route }) {
-  const { isAdmin, visibleRequests, decideRequest } = useApp();
+  const { isManager, visibleRequests, decideRequest } = useApp();
   // แท็บ: 'pending' = รออนุมัติ · 'done' = ตัดสินแล้ว (ประวัติ)
   const [tab, setTab] = useState('pending');
   const list = visibleRequests.filter((r) => (tab === 'pending' ? r.status === 'pending' : r.status !== 'pending'));
   const pendingCount = visibleRequests.filter((r) => r.status === 'pending').length;
 
-  // Admin กดอนุมัติ / ไม่อนุมัติ แล้วแจ้งผล
+  // Manager กดอนุมัติ / ไม่อนุมัติ แล้วแจ้งผล
   const decide = (r, approve) => {
     decideRequest(r.id, approve);
     showAlert(approve ? 'อนุมัติแล้ว' : 'ไม่อนุมัติคำขอ', approve ? `ดำเนินการแล้ว: ${r.summary}` : `แจ้งผลให้ ${r.byName} แล้ว`);
@@ -34,17 +34,17 @@ export default function RequestsScreen({ route }) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
       <Text style={styles.intro}>
-        {isAdmin
-          ? 'คำขอจัดการกล้องจากเจ้าหน้าที่องค์กร กดอนุมัติแล้วระบบจะทำตามคำขอทันที'
-          : 'คำขอที่คุณส่งจะมีผลเมื่อ Admin อนุมัติแล้วเท่านั้น'}
+        {isManager
+          ? 'คำขอจัดการกล้องจาก Operator กดอนุมัติแล้วระบบจะทำตามคำขอทันที'
+          : 'คำขอที่คุณส่งจะมีผลเมื่อ Manager อนุมัติแล้วเท่านั้น'}
       </Text>
 
-      {/* หน้ารออนุมัติ: เจ้าหน้าที่เพิ่งส่งคำขอ หรือยังมีคำขอค้าง → แสดงกล่องนาฬิกาทราย */}
-      {!isAdmin && pendingCount > 0 && (
+      {/* หน้ารออนุมัติ: Operator เพิ่งส่งคำขอ หรือยังมีคำขอค้าง → แสดงกล่องนาฬิกาทราย */}
+      {!isManager && pendingCount > 0 && (
         <View style={styles.waiting}>
           <View style={styles.waitIcon}><Ionicons name="hourglass" size={30} color="#fff" /></View>
-          <Text style={styles.waitTitle}>{route.params?.justSent ? 'ส่งคำขอแล้ว · รออนุมัติ' : 'รออนุมัติจาก Admin'}</Text>
-          <Text style={styles.waitSub}>คำขอ {pendingCount} รายการกำลังรอ Admin ตรวจสอบ เมื่ออนุมัติแล้วการเปลี่ยนแปลงจะมีผลทันที</Text>
+          <Text style={styles.waitTitle}>{route.params?.justSent ? 'ส่งคำขอแล้ว · รออนุมัติ' : 'รออนุมัติจาก Manager'}</Text>
+          <Text style={styles.waitSub}>คำขอ {pendingCount} รายการกำลังรอ Manager ตรวจสอบ เมื่ออนุมัติแล้วการเปลี่ยนแปลงจะมีผลทันที</Text>
         </View>
       )}
 
@@ -73,8 +73,8 @@ export default function RequestsScreen({ route }) {
               {!!r.decidedBy && <Text style={styles.meta}>โดย {r.decidedBy} · {r.decidedAt}</Text>}
             </View>
 
-            {/* ปุ่มตัดสิน: เฉพาะ Admin และคำขอที่ยังรออยู่ */}
-            {isAdmin && r.status === 'pending' && (
+            {/* ปุ่มตัดสิน: เฉพาะ Manager และคำขอที่ยังรออยู่ */}
+            {isManager && r.status === 'pending' && (
               <View style={{ flexDirection: 'row', marginTop: 12 }}>
                 <PrimaryButton label="ไม่อนุมัติ" icon="close" danger onPress={() => decide(r, false)} style={{ flex: 1, marginRight: 8 }} />
                 <PrimaryButton label="อนุมัติ" icon="checkmark" onPress={() => decide(r, true)} style={{ flex: 1 }} />

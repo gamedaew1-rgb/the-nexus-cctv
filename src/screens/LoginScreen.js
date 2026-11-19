@@ -9,9 +9,8 @@ import { colors, radius, shadow } from '../theme';
 
 // บัญชีทดสอบ — แตะเพื่อกรอกให้อัตโนมัติ
 const DEMO = [
-  { role: 'admin', username: 'admin', password: 'admin123' },
-  { role: 'staff', username: 'staff', password: 'staff123' },
-  { role: 'member', username: 'member', password: 'member123' },
+  { role: 'manager', username: 'manager', password: 'manager123' },
+  { role: 'operator', username: 'operator', password: 'operator123' },
 ];
 
 // หน้าล็อกอิน (UC-01)

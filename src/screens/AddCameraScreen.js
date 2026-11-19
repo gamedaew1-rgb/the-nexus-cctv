@@ -1,4 +1,4 @@
-// AddCameraScreen.js — หน้าเพิ่มกล้องใหม่ (UC-14) · Admin เพิ่มได้ทันที · เจ้าหน้าที่องค์กรส่งเป็นคำขอให้ Admin อนุมัติ (UC-16)
+// AddCameraScreen.js — หน้าเพิ่มกล้องใหม่ (UC-14) · Manager เพิ่มได้ทันที · Operator ส่งเป็นคำขอให้ Manager อนุมัติ (UC-16)
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -51,9 +51,9 @@ export default function AddCameraScreen({ navigation, route }) {
       latestFirmware: m.firmware,
       streamUrl: url || SAMPLE_STREAM,
     };
-    // Admin → เพิ่มทันที · เจ้าหน้าที่ → ส่งคำขอ
+    // Manager → เพิ่มทันที · Operator → ส่งคำขอ
     const result = manageCameras({ type: 'add', camera }, `เพิ่มกล้อง: ${camera.name} · ${getSite(siteId).name} (${model})`);
-    // เจ้าหน้าที่ → ปิดหน้านี้แล้วพาไปหน้า "รออนุมัติ" · Admin → แจ้งว่าเพิ่มแล้วและกลับหน้าเดิม
+    // Operator → ปิดหน้านี้แล้วพาไปหน้า "รออนุมัติ" · Manager → แจ้งว่าเพิ่มแล้วและกลับหน้าเดิม
     navigation.goBack();
     if (result === 'requested') navigation.navigate('Requests', { justSent: true });
     else showAlert('เพิ่มกล้องแล้ว', `${camera.name} · ${getSite(siteId).name}`);

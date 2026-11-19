@@ -1,13 +1,13 @@
-// AppContext.js — "สมอง" ของแอป เก็บข้อมูลกลาง (ผู้ใช้ที่ล็อกอิน กล้อง สมาชิก เหตุการณ์) และกฎสิทธิ์ของแต่ละบทบาท ทุกหน้าเรียกใช้ผ่าน useApp()
+// AppContext.js — "สมอง" ของแอป เก็บข้อมูลกลาง (ผู้ใช้ที่ล็อกอิน กล้อง บัญชีผู้ใช้ เหตุการณ์ คำขอ) และกฎสิทธิ์ของแต่ละบทบาท ทุกหน้าเรียกใช้ผ่าน useApp()
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import * as mock from './data/mockData';
 
 // ----- การบันทึกข้อมูลในเบราว์เซอร์ (เฉพาะเว็บ) -----
-// localStorage = เก็บถาวรในเบราว์เซอร์ รีเฟรชแล้วไม่หาย และแชร์กันทุกแท็บ → staff ส่งคำขอในแท็บหนึ่ง admin เห็นในอีกแท็บ
-// sessionStorage = จำว่าใครล็อกอินอยู่ แยกกันแต่ละแท็บ (แท็บหนึ่งเป็น staff อีกแท็บเป็น admin ได้)
+// localStorage = เก็บถาวรในเบราว์เซอร์ รีเฟรชแล้วไม่หาย และแชร์กันทุกแท็บ → operator ส่งคำขอในแท็บหนึ่ง manager เห็นในอีกแท็บ
+// sessionStorage = จำว่าใครล็อกอินอยู่ แยกกันแต่ละแท็บ (แท็บหนึ่งเป็น operator อีกแท็บเป็น manager ได้)
 // บนมือถือ (Expo Go) ไม่มีสองอย่างนี้ ข้อมูลจึงอยู่แค่ในหน่วยความจำเหมือนเดิม · ทุกจุดครอบ try/catch เผื่อเบราว์เซอร์ปิดการเก็บข้อมูล
-const DATA_KEY = 'nexus-cctv-data-v1';
+const DATA_KEY = 'nexus-cctv-data-v2'; // v2 = เหลือ 2 บทบาท (ข้อมูล v1 เก่าจะไม่ถูกโหลด)
 const USER_KEY = 'nexus-cctv-user';
 const isWeb = Platform.OS === 'web' && typeof window !== 'undefined';
 const readJSON = (store, key) => { try { return isWeb ? JSON.parse(window[store].getItem(key)) : null; } catch { return null; } };
@@ -23,19 +23,17 @@ export const useApp = () => useContext(AppContext);
 
 // ข้อมูลของ 3 บทบาท: ชื่อที่แสดง สีป้าย ไอคอน และคำอธิบายสิทธิ์
 export const ROLES = {
-  admin: { label: 'Admin', color: '#1E6FFF', bg: '#E8F0FF', icon: 'shield-checkmark', desc: 'จัดการได้ทุกอย่าง: สมาชิก บทบาท อุปกรณ์ และการแจ้งเตือนทุกสาขา' },
-  staff: { label: 'เจ้าหน้าที่องค์กร', color: '#0E9F9A', bg: '#DFF6F5', icon: 'briefcase', desc: 'เพิ่มและจัดการสมาชิก ดูกล้อง และส่งคำขอจัดการกล้องให้ Admin อนุมัติ ในสาขาที่รับผิดชอบ' },
-  member: { label: 'สมาชิก', color: '#64748B', bg: '#EEF2F7', icon: 'person', desc: 'ดูภาพสดและย้อนหลังได้เฉพาะสาขาที่ได้รับสิทธิ์' },
+  manager: { label: 'Manager', color: '#1E6FFF', bg: '#E8F0FF', icon: 'shield-checkmark', desc: 'จัดการได้ทุกอย่าง: ผู้ใช้ บทบาท อุปกรณ์ การแจ้งเตือน และอนุมัติคำขอจาก Operator ทุกสาขา' },
+  operator: { label: 'Operator', color: '#0E9F9A', bg: '#DFF6F5', icon: 'briefcase', desc: 'ดูภาพสดและย้อนหลัง และส่งคำขอจัดการกล้องให้ Manager อนุมัติ ในสาขาที่ได้รับสิทธิ์' },
 };
 
 // ตารางสิทธิ์ (ใช้แสดงในหน้าบัญชี)
 export const PERMISSIONS = [
-  { label: 'ดูภาพสดและย้อนหลัง', roles: ['admin', 'staff', 'member'] },
-  { label: 'เพิ่มสมาชิก', roles: ['admin', 'staff'] },
-  { label: 'กำหนดบทบาท Admin / เจ้าหน้าที่', roles: ['admin'] },
-  { label: 'จัดการอุปกรณ์ (เพิ่ม ลบ ย้าย อัปเดตกล้อง) · เจ้าหน้าที่ต้องรอ Admin อนุมัติ', roles: ['admin', 'staff'] },
-  { label: 'อนุมัติคำขอจัดการกล้อง', roles: ['admin'] },
-  { label: 'ตั้งค่าการแจ้งเตือนกล้อง', roles: ['admin'] },
+  { label: 'ดูภาพสดและย้อนหลัง', roles: ['manager', 'operator'] },
+  { label: 'จัดการอุปกรณ์ (เพิ่ม ลบ ย้าย อัปเดตกล้อง) · Operator ต้องรอ Manager อนุมัติ', roles: ['manager', 'operator'] },
+  { label: 'อนุมัติคำขอจัดการกล้อง', roles: ['manager'] },
+  { label: 'เพิ่มและจัดการผู้ใช้ กำหนดบทบาท', roles: ['manager'] },
+  { label: 'ตั้งค่าการแจ้งเตือนกล้อง', roles: ['manager'] },
 ];
 
 // AppProvider = ตัวเก็บ state กลาง ถูกครอบทั้งแอปใน App.js
@@ -46,14 +44,14 @@ export function AppProvider({ children }) {
   const [cameras, setCameras] = useState(saved?.cameras ?? mock.cameras);
   const [members, setMembers] = useState(saved?.members ?? mock.members);
   const [alerts, setAlerts] = useState(saved?.alerts ?? mock.alerts);
-  // คำขอจัดการกล้องจากเจ้าหน้าที่ (เริ่มต้นว่าง) · status: 'pending' รออนุมัติ / 'approved' อนุมัติแล้ว / 'rejected' ไม่อนุมัติ
+  // คำขอจัดการกล้องจาก Operator (เริ่มต้นว่าง) · status: 'pending' รออนุมัติ / 'approved' อนุมัติแล้ว / 'rejected' ไม่อนุมัติ
   const [requests, setRequests] = useState(saved?.requests ?? []);
 
   // บันทึกทุกครั้งที่ข้อมูลเปลี่ยน
   useEffect(() => { writeJSON('localStorage', DATA_KEY, { cameras, members, alerts, requests }); }, [cameras, members, alerts, requests]);
   useEffect(() => { writeJSON('sessionStorage', USER_KEY, currentUserId); }, [currentUserId]);
 
-  // ฟังว่าแท็บอื่นแก้ข้อมูลหรือไม่ (เช่น staff ส่งคำขอ) แล้วอัปเดตหน้าจอแท็บนี้ทันทีโดยไม่ต้องรีเฟรช
+  // ฟังว่าแท็บอื่นแก้ข้อมูลหรือไม่ (เช่น operator ส่งคำขอ) แล้วอัปเดตหน้าจอแท็บนี้ทันทีโดยไม่ต้องรีเฟรช
   useEffect(() => {
     if (!isWeb) return undefined;
     const onStorage = (e) => {
@@ -70,22 +68,23 @@ export function AppProvider({ children }) {
   // หาผู้ใช้ที่ล็อกอินอยู่ แล้วคำนวณสิทธิ์จากบทบาท (role)
   const currentUser = members.find((m) => m.id === currentUserId) ?? null;
   const role = currentUser?.role;
-  const isAdmin = role === 'admin';
-  const canManageTeam = role === 'admin' || role === 'staff';
-  // จัดการกล้องได้: Admin ทำได้ทันที · เจ้าหน้าที่ทำได้แต่ต้องส่งคำขอให้ Admin อนุมัติก่อน (needsApproval)
-  const canManageDevices = isAdmin || role === 'staff';
-  const needsApproval = role === 'staff';
+  const isManager = role === 'manager';
+  // จัดการผู้ใช้ (เพิ่ม แก้ ลบ กำหนดบทบาท) ได้เฉพาะ Manager
+  const canManageTeam = isManager;
+  // จัดการกล้องได้: Manager ทำได้ทันที · Operator ทำได้แต่ต้องส่งคำขอให้ Manager อนุมัติก่อน (needsApproval)
+  const canManageDevices = isManager || role === 'operator';
+  const needsApproval = role === 'operator';
 
-  // กรองข้อมูลตามสิทธิ์: Admin เห็นทุกสาขา · บทบาทอื่นเห็นเฉพาะสาขาใน siteIds ของตัวเอง แล้วกรองกล้องและเหตุการณ์ตามสาขาที่เห็น
-  const visibleSiteIds = !currentUser ? [] : isAdmin ? sites.map((s) => s.id) : currentUser.siteIds;
+  // กรองข้อมูลตามสิทธิ์: Manager เห็นทุกสาขา · บทบาทอื่นเห็นเฉพาะสาขาใน siteIds ของตัวเอง แล้วกรองกล้องและเหตุการณ์ตามสาขาที่เห็น
+  const visibleSiteIds = !currentUser ? [] : isManager ? sites.map((s) => s.id) : currentUser.siteIds;
   const visibleSites = sites.filter((s) => visibleSiteIds.includes(s.id));
   const visibleCameras = cameras.filter((c) => visibleSiteIds.includes(c.siteId));
   const visibleAlerts = alerts.filter((a) => visibleCameras.some((c) => c.id === a.cameraId));
 
-  // Admin แก้ได้ทุกคนยกเว้นตัวเอง · เจ้าหน้าที่แก้ได้เฉพาะสมาชิก
-  const canEditMember = (m) => !!currentUser && m.id !== currentUser.id && (isAdmin || (role === 'staff' && m.role === 'member'));
-  // บทบาทที่ผู้ใช้ปัจจุบันกำหนดให้คนอื่นได้: Admin = ทุกบทบาท · เจ้าหน้าที่ = สมาชิกเท่านั้น · สมาชิก = ไม่ได้เลย
-  const assignableRoles = isAdmin ? ['admin', 'staff', 'member'] : role === 'staff' ? ['member'] : [];
+  // Manager แก้ได้ทุกคนยกเว้นตัวเอง · Operator แก้ใครไม่ได้
+  const canEditMember = (m) => !!currentUser && m.id !== currentUser.id && isManager;
+  // บทบาทที่ผู้ใช้ปัจจุบันกำหนดให้คนอื่นได้: Manager = ทั้ง 2 บทบาท · Operator = ไม่ได้เลย
+  const assignableRoles = isManager ? ['manager', 'operator'] : [];
 
   // แก้ข้อมูลกล้องหลายตัวพร้อมกัน (ใช้ในหน้าจัดการอุปกรณ์) patch เป็นค่าคงที่หรือฟังก์ชันก็ได้
   const updateCameras = (ids, patch) =>
@@ -126,8 +125,8 @@ export function AppProvider({ children }) {
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   };
 
-  // จุดเดียวที่ทุกหน้าใช้จัดการกล้อง: Admin → ทำทันที คืนค่า 'done' · เจ้าหน้าที่ → สร้างคำขอรออนุมัติ คืนค่า 'requested'
-  // summary = ข้อความสั้น ๆ ที่ Admin จะเห็นในรายการคำขอ เช่น "ลบกล้อง: ล็อบบี้"
+  // จุดเดียวที่ทุกหน้าใช้จัดการกล้อง: Manager → ทำทันที คืนค่า 'done' · Operator → สร้างคำขอรออนุมัติ คืนค่า 'requested'
+  // summary = ข้อความสั้น ๆ ที่ Manager จะเห็นในรายการคำขอ เช่น "ลบกล้อง: ล็อบบี้"
   const manageCameras = (action, summary) => {
     if (!needsApproval) { applyAction(action); return 'done'; }
     setRequests((list) => [{
@@ -137,16 +136,16 @@ export function AppProvider({ children }) {
     return 'requested';
   };
 
-  // Admin ตัดสินคำขอ: อนุมัติ → ทำตามคำขอจริง · ไม่อนุมัติ → แค่เปลี่ยนสถานะ (ตรวจว่ายังรออยู่ กันกดซ้ำ)
+  // Manager ตัดสินคำขอ: อนุมัติ → ทำตามคำขอจริง · ไม่อนุมัติ → แค่เปลี่ยนสถานะ (ตรวจว่ายังรออยู่ กันกดซ้ำ)
   const decideRequest = (id, approve) => {
     const r = requests.find((x) => x.id === id);
-    if (!isAdmin || !r || r.status !== 'pending') return;
+    if (!isManager || !r || r.status !== 'pending') return;
     if (approve) applyAction(r.action);
     setRequests((list) => list.map((x) => (x.id === id ? { ...x, status: approve ? 'approved' : 'rejected', decidedBy: currentUser.name, decidedAt: nowText() } : x)));
   };
 
-  // คำขอที่ผู้ใช้คนนี้เห็น: Admin เห็นทั้งหมด · เจ้าหน้าที่เห็นเฉพาะที่ตัวเองส่ง
-  const visibleRequests = isAdmin ? requests : requests.filter((r) => r.byId === currentUser?.id);
+  // คำขอที่ผู้ใช้คนนี้เห็น: Manager เห็นทั้งหมด · Operator เห็นเฉพาะที่ตัวเองส่ง
+  const visibleRequests = isManager ? requests : requests.filter((r) => r.byId === currentUser?.id);
   const pendingCount = visibleRequests.filter((r) => r.status === 'pending').length;
 
   // ล็อกอิน: หาบัญชีที่ชื่อผู้ใช้ (ไม่สนตัวพิมพ์เล็ก/ใหญ่) และรหัสผ่านตรงกัน ถ้าเจอจะจำผู้ใช้ไว้และคืนค่า true · ในอนาคตเปลี่ยนตรงนี้เป็นเรียก API ของ Backend
@@ -156,9 +155,9 @@ export function AppProvider({ children }) {
     return !!u;
   };
 
-  // รวมทุกอย่างที่หน้าจอต้องใช้ ส่งออกผ่าน Context · canEditAlarm เป็นสิทธิ์ของ Admin เท่านั้น · canManageDevices = Admin และเจ้าหน้าที่ (เจ้าหน้าที่ต้องรออนุมัติ)
+  // รวมทุกอย่างที่หน้าจอต้องใช้ ส่งออกผ่าน Context · canEditAlarm เป็นสิทธิ์ของ Manager เท่านั้น · canManageDevices = Manager และ Operator (Operator ต้องรออนุมัติ)
   const value = {
-    currentUser, role, isAdmin, canManageTeam, canManageDevices, needsApproval, canEditAlarm: isAdmin,
+    currentUser, role, isManager, canManageTeam, canManageDevices, needsApproval, canEditAlarm: isManager,
     manageCameras, decideRequest, visibleRequests, pendingCount,
     canEditMember, assignableRoles,
     sites, visibleSites, cameras, visibleCameras, members, alerts, visibleAlerts, setAlerts,
@@ -172,7 +171,7 @@ export function AppProvider({ children }) {
     // ชื่อกล้องซ้ำในสาขาเดียวกันหรือไม่ (ไม่สนช่องว่างหัวท้าย)
     cameraNameTaken: (siteId, name) => cameras.some((c) => c.siteId === siteId && c.name.trim() === name.trim()),
     updateMember: (id, patch) => setMembers((list) => list.map((m) => (m.id === id ? { ...m, ...patch } : m))),
-    // เพิ่มสมาชิกใหม่ ใช้เวลาปัจจุบัน (Date.now) สร้างรหัสที่ไม่ซ้ำ
+    // เพิ่มผู้ใช้ใหม่ ใช้เวลาปัจจุบัน (Date.now) สร้างรหัสที่ไม่ซ้ำ
     addMember: (m) => setMembers((list) => [...list, { ...m, id: 'm' + Date.now() }]),
     removeMember: (id) => setMembers((list) => list.filter((m) => m.id !== id)),
     usernameTaken: (u) => members.some((m) => m.username.toLowerCase() === u.trim().toLowerCase()),

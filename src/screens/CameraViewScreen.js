@@ -76,7 +76,7 @@ export default function CameraViewScreen({ route, navigation }) {
           {/* ไปหน้าย้อนหลังของกล้องนี้ (ส่ง cameraId ไปที่แท็บ Playback) */}
           <ListRow icon="time" title="ดูย้อนหลัง" subtitle="ไทม์ไลน์ 24 ชั่วโมง"
             onPress={() => navigation.navigate('Main', { screen: 'Playback', params: { cameraId: camera.id } })} last={!canEditAlarm} />
-          {/* เมนูตั้งค่าการแจ้งเตือนแสดงเฉพาะ Admin (canEditAlarm) */}
+          {/* เมนูตั้งค่าการแจ้งเตือนแสดงเฉพาะ Manager (canEditAlarm) */}
           {canEditAlarm && (
             <ListRow icon="shield-checkmark" title="การแจ้งเตือน"
               subtitle={a.enabled ? `${SCHEDULES.find((x) => x.value === a.schedule).label} · ความไว${SENSITIVITY.find((x) => x.value === a.sensitivity).label}` : 'ปิดอยู่'}

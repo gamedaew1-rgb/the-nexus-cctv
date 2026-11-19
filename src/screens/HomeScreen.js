@@ -19,7 +19,7 @@ function greeting() {
 // หน้าแรก: ภาพรวมองค์กร เมนูลัด สาขา และเหตุการณ์ล่าสุด
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { currentUser, org, visibleSites, visibleCameras, visibleAlerts, canManageTeam, canManageDevices, isAdmin, pendingCount, getCamera, getSite, logout } = useApp();
+  const { currentUser, org, visibleSites, visibleCameras, visibleAlerts, canManageTeam, canManageDevices, isManager, pendingCount, getCamera, getSite, logout } = useApp();
   const [askLogout, setAskLogout] = useState(false);
 
   // แถบสถานะตัวอักษรสีขาวเฉพาะหน้านี้ (หัวสีฟ้า)
@@ -37,12 +37,12 @@ export default function HomeScreen({ navigation }) {
     { icon: 'grid', label: 'ภาพสด', onPress: () => navigation.navigate('Live') },
     { icon: 'play-circle', label: 'ย้อนหลัง', onPress: () => navigation.navigate('Playback') },
     { icon: 'notifications', label: 'เหตุการณ์', onPress: () => navigation.navigate('Alerts') },
-    canManageTeam && { icon: 'person-add', label: 'เพิ่มสมาชิก', onPress: () => navigation.navigate('InviteMember') },
-    canManageTeam && { icon: 'people', label: 'สมาชิก', onPress: () => navigation.navigate('Team') },
+    canManageTeam && { icon: 'person-add', label: 'เพิ่มผู้ใช้', onPress: () => navigation.navigate('InviteMember') },
+    canManageTeam && { icon: 'people', label: 'ผู้ใช้', onPress: () => navigation.navigate('Team') },
     canManageDevices && { icon: 'hardware-chip', label: 'อุปกรณ์', onPress: () => navigation.navigate('Devices') },
     canManageDevices && { icon: 'add-circle', label: 'เพิ่มกล้อง', onPress: () => navigation.navigate('AddCamera') },
-    // คำขอจัดการกล้อง: Admin = คำขอที่ต้องอนุมัติ · เจ้าหน้าที่ = คำขอของฉัน · ตัวเลขในวงเล็บ = จำนวนที่รออนุมัติ
-    canManageDevices && { icon: 'document-text', label: `${isAdmin ? 'อนุมัติ' : 'คำขอ'}${pendingCount ? ` (${pendingCount})` : ''}`, onPress: () => navigation.navigate('Requests') },
+    // คำขอจัดการกล้อง: Manager = คำขอที่ต้องอนุมัติ · Operator = คำขอของฉัน · ตัวเลขในวงเล็บ = จำนวนที่รออนุมัติ
+    canManageDevices && { icon: 'document-text', label: `${isManager ? 'อนุมัติ' : 'คำขอ'}${pendingCount ? ` (${pendingCount})` : ''}`, onPress: () => navigation.navigate('Requests') },
     { icon: 'person-circle', label: 'บัญชี', onPress: () => navigation.navigate('More') },
   ].filter(Boolean);
 
@@ -84,13 +84,13 @@ export default function HomeScreen({ navigation }) {
       </Card>
 
       <View style={{ paddingHorizontal: 16 }}>
-        {/* กล่องแจ้งคำขอรออนุมัติ: Admin = มีคำขอต้องตัดสิน · เจ้าหน้าที่ = คำขอของตัวเองที่ยังรออยู่ · กดแล้วไปหน้าคำขอ */}
+        {/* กล่องแจ้งคำขอรออนุมัติ: Manager = มีคำขอต้องตัดสิน · Operator = คำขอของตัวเองที่ยังรออยู่ · กดแล้วไปหน้าคำขอ */}
         {canManageDevices && pendingCount > 0 && (
           <Pressable style={styles.pending} onPress={() => navigation.navigate('Requests')}>
             <View style={styles.pendingIcon}><Ionicons name="hourglass" size={20} color="#fff" /></View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.pendingTitle}>{isAdmin ? `มีคำขอรออนุมัติ ${pendingCount} รายการ` : `คำขอของคุณรออนุมัติ ${pendingCount} รายการ`}</Text>
-              <Text style={styles.pendingSub}>{isAdmin ? 'แตะเพื่อตรวจและอนุมัติคำขอจากเจ้าหน้าที่' : 'แตะเพื่อดูสถานะ'}</Text>
+              <Text style={styles.pendingTitle}>{isManager ? `มีคำขอรออนุมัติ ${pendingCount} รายการ` : `คำขอของคุณรออนุมัติ ${pendingCount} รายการ`}</Text>
+              <Text style={styles.pendingSub}>{isManager ? 'แตะเพื่อตรวจและอนุมัติคำขอจาก Operator' : 'แตะเพื่อดูสถานะ'}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.accent} />
           </Pressable>

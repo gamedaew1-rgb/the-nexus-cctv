@@ -83,12 +83,12 @@ function RootNavigator() {
       ) : (
         <>
           <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
-          {/* หน้าย่อยที่เปิดซ้อนบนแท็บ: ดูกล้อง, ตั้งค่าแจ้งเตือน, สมาชิก, เพิ่มสมาชิก, อุปกรณ์ */}
+          {/* หน้าย่อยที่เปิดซ้อนบนแท็บ: ดูกล้อง, ตั้งค่าแจ้งเตือน, ผู้ใช้, เพิ่มผู้ใช้, อุปกรณ์ */}
           <Stack.Screen name="CameraView" component={CameraViewScreen} options={{ title: 'กล้อง' }} />
           <Stack.Screen name="AlarmSettings" component={AlarmSettingsScreen} options={{ title: 'ตั้งค่าการแจ้งเตือน' }} />
-          <Stack.Screen name="Team" component={TeamScreen} options={{ title: 'สมาชิกและสาขา' }} />
-          <Stack.Screen name="MemberDetail" component={MemberDetailScreen} options={{ title: 'ข้อมูลสมาชิก' }} />
-          <Stack.Screen name="InviteMember" component={InviteMemberScreen} options={{ title: 'เพิ่มสมาชิก', presentation: 'modal' }} />
+          <Stack.Screen name="Team" component={TeamScreen} options={{ title: 'ผู้ใช้และสาขา' }} />
+          <Stack.Screen name="MemberDetail" component={MemberDetailScreen} options={{ title: 'ข้อมูลผู้ใช้' }} />
+          <Stack.Screen name="InviteMember" component={InviteMemberScreen} options={{ title: 'เพิ่มผู้ใช้', presentation: 'modal' }} />
           <Stack.Screen name="Devices" component={DevicesScreen} options={{ title: 'จัดการอุปกรณ์' }} />
           <Stack.Screen name="AddCamera" component={AddCameraScreen} options={{ title: 'เพิ่มกล้อง', presentation: 'modal' }} />
           <Stack.Screen name="Requests" component={RequestsScreen} options={{ title: 'คำขอจัดการกล้อง' }} />
